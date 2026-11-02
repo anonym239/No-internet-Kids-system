@@ -22,7 +22,7 @@
 
   /* ======================= ZEICHNEN ======================= */
   Nova.registerApp({
-    id: 'draw', name: 'Zeichnen', icon: 'brush', folder: 'creative', grad: ['#ff5c8a', '#a855f7'], desc: 'Malen mit Pinsel, Farben & Ebenen-Undo', full: true,
+    id: 'draw', name: 'Zeichnen', icon: 'a-draw', folder: 'creative', grad: ['#ff5c8a', '#a855f7'], desc: 'Malen mit Pinsel, Farben & Ebenen-Undo', full: true,
     mount(body, ctx) {
       const W = 1600, H = 1000;
       const cv = h('canvas', { class: 'draw-cv', width: W, height: H });
@@ -114,7 +114,7 @@
     return c;
   }
   Nova.registerApp({
-    id: 'pixel', name: 'Pixel-Studio', icon: 'pixel', folder: 'creative', grad: ['#00c2a8', '#4f8cff'], desc: 'Pixel-Art & Sprites erstellen',
+    id: 'pixel', name: 'Pixel-Studio', icon: 'a-pixel', folder: 'creative', grad: ['#00c2a8', '#4f8cff'], desc: 'Pixel-Art & Sprites erstellen',
     mount(body, ctx) {
       let n = 16, px, color = '#b13e53', tool = 'pen', mirror = false, editing = null, down = false;
       const undo = [];
@@ -199,7 +199,7 @@
     o.start(t); o.stop(t + 0.3);
   }
   Nova.registerApp({
-    id: 'beats', name: 'Beat-Maker', icon: 'music', folder: 'creative', grad: ['#6366f1', '#ec4899'], desc: 'Eigene Beats mit dem Step-Sequencer',
+    id: 'beats', name: 'Beat-Maker', icon: 'a-beats', folder: 'creative', grad: ['#6366f1', '#ec4899'], desc: 'Eigene Beats mit dem Step-Sequencer',
     mount(body, ctx) {
       let grid = TRACKS.map(() => new Array(16).fill(false)), bpm = 110, playing = false, step = 0, timer = null, nextT = 0, cur = null;
       const ac = Nova.kit.audio();
@@ -267,7 +267,7 @@
 
   /* ======================= GALERIE ======================= */
   Nova.registerApp({
-    id: 'gallery', name: 'Galerie', icon: 'image', folder: 'creative', grad: ['#0ea5e9', '#22c55e'], desc: 'Deine Zeichnungen & Pixel-Art',
+    id: 'gallery', name: 'Galerie', icon: 'a-gallery', folder: 'creative', grad: ['#0ea5e9', '#22c55e'], desc: 'Deine Zeichnungen & Pixel-Art',
     mount(body, ctx) {
       let filter = 'all';
       const grid = h('div', { class: 'gal-grid' });

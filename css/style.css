@@ -1110,3 +1110,21 @@ body[data-icons="tint"] .app-ic { background: color-mix(in srgb, var(--ic, #888)
 :root[data-fx="1"] .sec:nth-of-type(1) { animation-delay: .08s; }
 :root[data-fx="1"] .sec:nth-of-type(2) { animation-delay: .12s; }
 :root[data-fx="1"] .dialog, :root[data-fx="1"] .ctx-menu { box-shadow: var(--shadow); }
+
+/* App-Symbole: klarer & größer */
+.app-ic { width: 48px; height: 48px; border-radius: 12px; }
+.app-ic .ic { width: 27px; height: 27px; stroke-width: 1.8; }
+.app-ic.sm { width: 36px; height: 36px; }
+.app-ic.sm .ic { width: 21px; height: 21px; }
+.app-ic.xs { width: 28px; height: 28px; }
+.app-ic.xs .ic { width: 17px; height: 17px; }
+body[data-icons="tint"] .app-ic { background: color-mix(in srgb, var(--ic, #888) 15%, var(--surface)) !important; color: var(--ic, var(--text)); border: 1px solid color-mix(in srgb, var(--ic, #888) 22%, transparent); }
+:root[data-theme="dark"] body[data-icons="tint"] .app-ic { background: color-mix(in srgb, var(--ic, #888) 20%, var(--surface)) !important; color: color-mix(in srgb, var(--ic, #888) 62%, #fff); }
+body[data-icons="color"] .app-ic { color: #fff; border: 0; }
+@media (max-width: 860px) { .app-ic { width: 42px; height: 42px; border-radius: 11px; } .app-ic .ic { width: 24px; height: 24px; } }
+
+/* Verlassen-Schutz einrichten */
+.guard-step { display: flex; align-items: center; gap: 12px; padding: 12px; border: 1px solid var(--border); border-radius: 10px; }
+.guard-step.done { opacity: .6; }
+.guard-n { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); font-weight: 600; font-size: 13px; flex: none; }
+.guard-step.done .guard-n { background: var(--text); color: var(--bg); }

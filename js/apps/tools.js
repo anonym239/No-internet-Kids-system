@@ -36,7 +36,7 @@
   };
 
   Nova.registerApp({
-    id: 'calc', name: 'Rechner', icon: 'calc', folder: 'tools', grad: ['#4f8cff', '#6a5cff'], desc: 'Taschenrechner mit Verlauf',
+    id: 'calc', name: 'Rechner', icon: 'a-calc', folder: 'tools', grad: ['#4f8cff', '#6a5cff'], desc: 'Taschenrechner mit Verlauf',
     mount(body, ctx) {
       let exp = '', sci = false, justEval = false;
       const expEl = h('div', { class: 'calc-exp' });
@@ -96,7 +96,7 @@
 
   /* ======================= AUFGABEN ======================= */
   Nova.registerApp({
-    id: 'todo', name: 'Aufgaben', icon: 'check', folder: 'tools', grad: ['#2ecc71', '#00b4d8'], desc: 'To-do-Listen für Schule und Freizeit',
+    id: 'todo', name: 'Aufgaben', icon: 'a-todo', folder: 'tools', grad: ['#2ecc71', '#00b4d8'], desc: 'To-do-Listen für Schule und Freizeit',
     mount(body) {
       let filter = 'open', list = 'Alle';
       const defaults = ['Schule', 'Freizeit', 'Zuhause'];
@@ -161,7 +161,7 @@
   /* ======================= NOTIZEN ======================= */
   const NOTE_COLORS = ['#7c5cff', '#4f8cff', '#00c2a8', '#ffb800', '#ff6b3d', '#ff5c8a'];
   Nova.registerApp({
-    id: 'notes', name: 'Notizen', icon: 'note', folder: 'tools', grad: ['#ffb800', '#ff6b3d'], desc: 'Notizen schreiben und ordnen',
+    id: 'notes', name: 'Notizen', icon: 'a-notes', folder: 'tools', grad: ['#ffb800', '#ff6b3d'], desc: 'Notizen schreiben und ordnen',
     mount(body, ctx) {
       let cur = null, q = '';
       const listEl = h('div', { class: 'note-list' });
@@ -202,7 +202,7 @@
 
   /* ======================= TIMER & STOPPUHR ======================= */
   Nova.registerApp({
-    id: 'timer', name: 'Timer', icon: 'timer', folder: 'tools', grad: ['#ff5c8a', '#ff9f43'], desc: 'Timer, Stoppuhr & Lernzeit',
+    id: 'timer', name: 'Timer', icon: 'a-timer', folder: 'tools', grad: ['#ff5c8a', '#ff9f43'], desc: 'Timer, Stoppuhr & Lernzeit',
     mount(body) {
       let mode = 'timer', total = 300, left = 300, running = false, last = 0, sw = 0, laps = [], raf;
       const ring = h('div', { class: 'tm-ring' });
@@ -254,7 +254,7 @@
 
   /* ======================= LERNKARTEN ======================= */
   Nova.registerApp({
-    id: 'cards', name: 'Lernkarten', icon: 'cards', folder: 'tools', grad: ['#a855f7', '#6366f1'], desc: 'Vokabeln & Fakten lernen',
+    id: 'cards', name: 'Lernkarten', icon: 'a-cards', folder: 'tools', grad: ['#a855f7', '#6366f1'], desc: 'Vokabeln & Fakten lernen',
     mount(body, ctx) {
       const view = h('div', { class: 'cards-app' });
       body.append(view);

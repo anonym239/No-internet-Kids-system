@@ -28,7 +28,7 @@
   /* ================= Theme ================= */
   const lum = (hex) => { const n = parseInt(hex.slice(1), 16); const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
   function applyTheme(acc) {
-    const s = acc ? acc.settings : { theme: 'dark', accent: 'auto', wallpaper: 'mono', icons: 'mono', bw: false };
+    const s = acc ? acc.settings : { theme: 'dark', accent: 'auto', wallpaper: 'mono', icons: 'tint', bw: false };
     let theme = s.theme;
     if (theme === 'auto') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
     const de = document.documentElement;
@@ -39,7 +39,7 @@
     de.style.setProperty('--accent', accent);
     de.style.setProperty('--accent-fg', lum(accent) > 0.45 ? '#111113' : '#ffffff');
     document.body.dataset.wp = s.bw ? 'mono' : s.wallpaper || 'mono';
-    document.body.dataset.icons = s.bw ? 'mono' : s.icons || 'mono';
+    document.body.dataset.icons = s.bw ? 'mono' : s.icons || 'tint';
     const meta = $('meta[name=theme-color]');
     if (meta) meta.content = theme === 'light' ? '#f7f7f8' : '#0b0b0c';
   }
@@ -48,8 +48,14 @@
     const g = store.COLORS[acc.color % store.COLORS.length];
     return h('div', { class: 'avatar ' + size, style: { background: g[0] } }, (acc.name || '?').trim().charAt(0).toUpperCase());
   }
+  /* Eindeutige Erkennungsfarbe pro App (für „Dezent") */
+  const TINT = {
+    runner: '#f97316', pulse: '#7c3aed', snake: '#16a34a', memory: '#db2777', four: '#ca8a04', bricks: '#0284c7', realgames: '#059669',
+    mathe: '#2563eb', deutsch: '#dc2626', calc: '#475569', todo: '#65a30d', notes: '#d97706', timer: '#e11d48', cards: '#4f46e5',
+    draw: '#c026d3', pixel: '#0d9488', beats: '#9333ea', gallery: '#0891b2', settings: '#52525b', screentime: '#6d28d9'
+  };
   function appIcon(a, size = '') {
-    return h('div', { class: 'app-ic ' + size, style: { background: `linear-gradient(145deg, ${a.grad[0]}, ${a.grad[1]})`, '--ic': a.grad[0] }, html: icon(a.icon) });
+    return h('div', { class: 'app-ic ' + size, style: { background: `linear-gradient(145deg, ${a.grad[0]}, ${a.grad[1]})`, '--ic': TINT[a.id] || a.grad[0] }, html: icon(a.icon) });
   }
 
   /* ================= Login ================= */
@@ -164,10 +170,24 @@
     return false;
   }
 
+  /* Verlassen/Abmelden: Eltern-PIN (falls eingerichtet und so eingestellt), sonst Konto-Passwort */
+  function exitNeedsParent(acc) { return Nova.st.hasParent(acc) && (acc.settings.exitAuth || 'parent') === 'parent'; }
+  async function askExitAuth(acc, title, text) {
+    if (exitNeedsParent(acc)) {
+      const p = await askPin(title, text + ' Dafür ist die Eltern-PIN nötig.');
+      if (p == null) return false;
+      if (Nova.st.checkParent(acc, p)) return true;
+      ui.toast('Eltern-PIN falsch', 'err');
+      return false;
+    }
+    return askSecret(acc, title, text + ' Gib ' + (acc.auth === 'password' ? 'dein Passwort' : 'deine PIN') + ' ein.');
+  }
+
   async function logout() {
     const acc = store.current;
-    if (acc && !(await askSecret(acc, 'Abmelden', 'Gib ' + (acc.auth === 'password' ? 'dein Passwort' : 'deine PIN') + ' ein, um dich abzumelden.'))) return;
+    if (acc && !(await askExitAuth(acc, 'Abmelden', 'Du möchtest dich abmelden.'))) return;
     Nova.native.setKiosk(false, true);
+    if (Nova.native.isAndroid) Nova.native.guard.stop();
     store.logout(); showLogin();
   }
 
@@ -179,7 +199,7 @@
     if (!acc) return Nova.native.exit();
     exiting = true;
     try {
-      if (await askSecret(acc, 'Nova verlassen?', 'Zum Verlassen der App brauchst du ' + (acc.auth === 'password' ? 'dein Passwort' : 'deine PIN') + '.')) { allowUnload = true; Nova.native.exit(); }
+      if (await askExitAuth(acc, 'Nova verlassen?', 'Du möchtest Nova verlassen.')) { allowUnload = true; Nova.native.exit(); }
     } finally { exiting = false; }
   }
   let allowUnload = false;
@@ -363,6 +383,39 @@
     startTicker();
     Nova.native.setKiosk(!!acc.settings.kiosk);
     checkLock();
+    ensureGuard(true);
+  }
+
+  /* ---- Nova-Schutz (Android) ---- */
+  let guardPrompted = false;
+  async function ensureGuard(prompt) {
+    const acc = store.current;
+    if (!acc || !Nova.native.guard.available || acc.settings.guard === false) return;
+    const st = await Nova.native.guard.status();
+    if (st.usage && st.overlay) { if (!st.running) Nova.native.guard.start(); return; }
+    if (prompt && !guardPrompted) { guardPrompted = true; setTimeout(guardSetupDialog, 900); }
+  }
+  async function guardSetupDialog() {
+    const st = await Nova.native.guard.status();
+    const step = (n, done, title, text, onClick) => h('div', { class: 'guard-step' + (done ? ' done' : '') },
+      h('span', { class: 'guard-n' }, done ? '✓' : n), h('div', { class: 'grow' }, h('b', null, title), h('div', { class: 'muted small' }, text)),
+      done ? null : h('button', { class: 'btn sm primary', onclick: onClick }, 'Öffnen'));
+    await ui.dialog({
+      title: 'Verlassen-Schutz einrichten',
+      text: 'Damit Nova (und Spiele) nicht über Home oder Übersicht verlassen werden können, braucht Nova zwei Berechtigungen. Am besten richten das die Eltern ein.',
+      body: h('div', { class: 'stack' },
+        step(1, st.usage, 'Nutzungszugriff', 'In der Liste „Nova OS" auswählen und erlauben.', () => Nova.native.guard.openUsage()),
+        step(2, st.overlay, 'Über anderen Apps einblenden', 'Für „Nova OS" einschalten.', () => Nova.native.guard.openOverlay())),
+      actions: [{ label: 'Später', ghost: true, value: false }, { label: 'Fertig', primary: true, value: true }]
+    });
+    ensureGuard(false);
+  }
+  async function onGuardReturn(reason) {
+    const acc = store.current;
+    if (!acc || !reason) return;
+    if (reason === 'timeup') { updatePill(); checkLock(); ui.toast('Deine Bildschirmzeit ist abgelaufen'); return; }
+    ui.toast(reason === 'closed' ? 'Nova kann nicht einfach geschlossen werden' : 'Zum Verlassen ist ' + (exitNeedsParent(acc) ? 'die Eltern-PIN' : 'dein Passwort') + ' nötig');
+    if (!$('.dialog-wrap')) requestExit();
   }
 
   function refreshHome() {
@@ -769,8 +822,9 @@
       if (sec > 30) ui.toast('Spielzeit ' + Nova.fmtDur(sec, true) + ' zur Bildschirmzeit gezählt');
     }
     if (acc && acc.settings.kiosk) Nova.native.restoreKiosk();
+    if (acc && Nova.native.isAndroid) { Nova.native.guard.setGame(null, 0); ensureGuard(false); }
     updatePill(); checkLock();
   }
 
-  Nova.shell = { handleBack, markExternal, onResume, logout, requestExit, askSecret, askPassword, showLogin, showHome, refreshHome, launch, closeWin, tokenDialog, importDialog, remoteDialog, applyTheme, askPin, avatar, appIcon, seg, fmtId, checkLock, hideLock, updatePill, APPS, FOLDERS, WALLPAPERS, ACCENTS };
+  Nova.shell = { handleBack, markExternal, onResume, onGuardReturn, ensureGuard, guardSetupDialog, exitNeedsParent, askExitAuth, logout, requestExit, askSecret, askPassword, showLogin, showHome, refreshHome, launch, closeWin, tokenDialog, importDialog, remoteDialog, applyTheme, askPin, avatar, appIcon, seg, fmtId, checkLock, hideLock, updatePill, APPS, FOLDERS, WALLPAPERS, ACCENTS };
 })();

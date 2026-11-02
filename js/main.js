@@ -5,7 +5,8 @@
   Nova.native.init({
     onBack: () => Nova.shell.handleBack(),
     onExitRequest: () => Nova.shell.requestExit(),
-    onResume: () => Nova.shell.onResume()
+    onResume: () => Nova.shell.onResume(),
+    onGuardReturn: (r) => Nova.shell.onGuardReturn(r)
   });
   if (Nova.store.resume()) Nova.shell.showHome();
   else Nova.shell.showLogin();

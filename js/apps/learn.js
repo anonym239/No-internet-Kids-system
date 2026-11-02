@@ -350,7 +350,7 @@
       return { q: 'x²' + fmt(p, 'x') + fmt(q, '') + ' = 0', big: true, type: 'set', answer: [r1, r2], allowText: true, placeholder: 'z. B. -2; 5', hint: 'Beide Lösungen mit „;" trennen',
         explain: { 1: 'Gesucht sind zwei Zahlen: zusammen ' + -p + ' und mal genommen ' + q + '. Das sind ' + r1 + ' und ' + r2 + '.', 4: 'p = ' + p + ', q = ' + q + '. x = ' + de(-p / 2) + ' ± √(' + de((p / 2) ** 2) + ' − ' + (q < 0 ? '(' + q + ')' : q) + ') = ' + de(-p / 2) + ' ± ' + de(Math.abs(r1 - r2) / 2) + ' → x₁ = ' + Math.min(r1, r2) + ', x₂ = ' + Math.max(r1, r2) } }; } });
 
-  Nova.learnApp({ id: 'mathe', name: 'Mathe', icon: 'math', grad: ['#4f8cff', '#7c5cff'], desc: 'Mathe üben von Klasse 1 bis 10 – mit Erklärungen passend zu deinem Alter', topics: T });
+  Nova.learnApp({ id: 'mathe', name: 'Mathe', icon: 'a-math', grad: ['#4f8cff', '#7c5cff'], desc: 'Mathe üben von Klasse 1 bis 10 – mit Erklärungen passend zu deinem Alter', topics: T });
 
   Nova.learnCheck = check; // für Tests
 })();

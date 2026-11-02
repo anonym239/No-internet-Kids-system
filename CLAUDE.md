@@ -11,11 +11,15 @@ Diese Datei liest jede neue Claude-Sitzung in diesem Repo automatisch. Sie enth�
 4. **Design: clean, ruhig, übersichtlich, nicht kindisch.**
    - Flache Flächen, feine 1-px-Linien, neutrale Akzentfarbe (Standard: Schwarz/Weiß), viel Weißraum
    - Keine Glas-/Blur-Effekte, keine bunten Farbverläufe in der Oberfläche, keine Emojis in UI-Texten (Ausnahme: Erklär-Stufe 1 für sehr kleine Kinder)
-   - App-Symbole standardmäßig „Schlicht“ (monochrom). „Dezent“/„Bunt“ sind nur Optionen.
+   - App-Symbole: eigene, eindeutige Motive (`a-*` in `js/core/icons.js`). Standard ist „Dezent farbig“ (jede App hat eine eigene Erkennungsfarbe, `TINT` in `shell.js`), „Schlicht“/„Bunt“ sind Optionen. Symbole müssen auf einen Blick erkennbar sein.
    - Es gibt einen **Schwarz-Weiß-Modus** (`settings.bw`)
    - Effekte (Glas/Blur, Schatten, Animationen, farbige Hintergründe) sind **optional**: Schalter „Effekte“ (`settings.fx`, CSS `:root[data-fx="1"]`), standardmäßig aus.
    - Muss auf PC **und** Handy (hoch und quer) gut aussehen. Vor dem Push mit Playwright in 1366×820, 390×844 und 844×390 prüfen.
 5. **Keine Nachbauten bestimmter Spiele.** Eigene Spiele sind Genre-Spiele (Runner, Rhythmus-Jump …). Die originalen Spiele (Subway Surfers, Geometry Dash …) werden nur über die App „Echte Spiele“ einmalig aus dem Play Store installiert.
+
+## Verlassen-Schutz (wichtig für den Inhaber)
+- Abmelden und Verlassen nur mit Passwort. Ist eine Eltern-PIN eingerichtet, standardmäßig nur mit Eltern-PIN (`settings.exitAuth`).
+- Android: `GuardService` und `NovaGuardPlugin` holen Nova zurück, wenn Home oder Übersicht gedrückt wird, auch aus über Nova gestarteten Spielen. Windows: Schließen wird in `electron/main.js` abgefangen.
 
 ## Aufbau
 - Reine Web-App (HTML/CSS/JS, kein Build-Schritt), Einstieg `index.html`

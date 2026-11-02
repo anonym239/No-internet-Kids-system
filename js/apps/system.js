@@ -52,13 +52,20 @@
               acc.settings.kiosk = want; saveSettings(); Nova.native.setKiosk(want); render();
             } })),
             Nova.native.isAndroid ? row('Nova als Startbildschirm', 'Beim Drücken der Home-Taste öffnet sich Nova', h('button', { class: 'btn sm', onclick: () => Nova.native.openHomeSettings() }, 'Einstellen')) : null,
-            row('Verlassen-Schutz', 'Abmelden und Beenden nur mit ' + (acc.auth === 'password' ? 'deinem Passwort' : 'deiner PIN'), h('span', { class: 'tag ok' }, 'aktiv'))
+            Nova.st.hasParent(acc)
+              ? row('Zum Verlassen & Abmelden nötig', 'Gilt auch, wenn ein Spiel über Home/Übersicht verlassen wird', shell().seg([['Eltern-PIN', 'parent'], ['Eigenes ' + (acc.auth === 'password' ? 'Passwort' : 'PIN'), 'account']], acc.settings.exitAuth || 'parent', async (v) => {
+                  const p = await shell().askPin('Eltern-PIN', 'Diese Einstellung dürfen nur Eltern ändern.');
+                  if (p != null && Nova.st.checkParent(acc, p)) { acc.settings.exitAuth = v; saveSettings(); } else if (p != null) ui.toast('Eltern-PIN falsch', 'err');
+                  render();
+                }))
+              : row('Verlassen-Schutz', 'Abmelden und Beenden nur mit ' + (acc.auth === 'password' ? 'deinem Passwort' : 'deiner PIN') + '. Tipp: Mit Eltern-PIN (Bildschirmzeit) lässt sich das noch strenger einstellen.', h('span', { class: 'tag ok' }, 'aktiv')),
+            Nova.native.isAndroid ? guardRow() : null
           ),
           group('Aussehen',
             row('Design', null, shell().seg([['Dunkel', 'dark'], ['Hell', 'light'], ['System', 'auto']], acc.settings.theme, (v) => { acc.settings.theme = v; saveSettings(); })),
             row('Effekte', 'Glas & Unschärfe, Schatten, Animationen und farbige Hintergründe', h('input', { type: 'checkbox', class: 'switch', checked: !!acc.settings.fx, onchange: (e) => { acc.settings.fx = e.target.checked; if (acc.settings.fx && (!acc.settings.wallpaper || acc.settings.wallpaper === 'mono')) acc.settings.wallpaper = 'aurora'; saveSettings(); render(); } })),
             row('Schwarz-Weiß', 'Alles in Graustufen – ohne Farben', h('input', { type: 'checkbox', class: 'switch', checked: !!acc.settings.bw, onchange: (e) => { acc.settings.bw = e.target.checked; saveSettings(); render(); } })),
-            acc.settings.bw ? null : row('App-Symbole', null, shell().seg([['Schlicht', 'mono'], ['Dezent', 'tint'], ['Bunt', 'color']], acc.settings.icons || 'mono', (v) => { acc.settings.icons = v; saveSettings(); })),
+            acc.settings.bw ? null : row('App-Symbole', null, shell().seg([['Schlicht', 'mono'], ['Dezent farbig', 'tint'], ['Bunt', 'color']], acc.settings.icons || 'tint', (v) => { acc.settings.icons = v; saveSettings(); })),
             acc.settings.bw ? null : row('Akzentfarbe', null, accents),
             acc.settings.bw ? null : h('div', { class: 'set-row col' }, h('div', null, 'Hintergrund'), wp),
             row('Profilfarbe', null, h('div', { class: 'swatches' }, store.COLORS.map((gr, i) => h('button', { class: 'swatch' + (acc.color === i ? ' on' : ''), style: { background: `linear-gradient(135deg, ${gr[0]}, ${gr[1]})` }, onclick: () => { acc.color = i; store.save(true); render(); } }))))
@@ -80,9 +87,29 @@
           group('Gefahrenzone',
             row('Konto von diesem Gerät löschen', 'Sichere vorher deinen Token, sonst ist alles weg', h('button', { class: 'btn sm danger', onclick: deleteAccount }, 'Löschen'))
           ),
-          h('div', { class: 'muted xs center about' }, 'Nova OS · Beta 0.3 · ' + ({ web: 'Web', electron: 'Windows/PC', android: 'Android' })[Nova.native.platform] + ' · 100 % offline · Keine Werbung · Keine Datensammlung')
+          h('div', { class: 'muted xs center about' }, 'Nova OS · Beta 0.4 · ' + ({ web: 'Web', electron: 'Windows/PC', android: 'Android' })[Nova.native.platform] + ' · 100 % offline · Keine Werbung · Keine Datensammlung')
         );
       };
+      function guardRow() {
+        const status = h('span', { class: 'muted small' }, 'Wird geprüft…');
+        const ctrl = h('div', { class: 'row gap' });
+        const r = row('Schutz vor Home & Übersicht', null, ctrl);
+        r.querySelector('.grow').append(status);
+        Nova.native.guard.status().then((st) => {
+          const ready = st.usage && st.overlay;
+          const on = acc.settings.guard !== false;
+          status.textContent = !on ? 'Ausgeschaltet – Home/Übersicht verlassen Nova ohne Passwort.' : ready ? (st.running ? 'Aktiv: Wer Nova oder ein Spiel über Home/Übersicht verlässt, wird sofort zurückgeholt.' : 'Bereit – startet gleich.') : 'Noch nicht eingerichtet – 2 Berechtigungen fehlen.';
+          if (on && !ready) ctrl.append(h('button', { class: 'btn sm primary', onclick: () => shell().guardSetupDialog().then(render) }, 'Einrichten'));
+          ctrl.append(h('input', { type: 'checkbox', class: 'switch', checked: on, onchange: async (e) => {
+            const want = e.target.checked; e.target.checked = !want;
+            if (!want && !(await shell().askExitAuth(acc, 'Schutz ausschalten', 'Du möchtest den Verlassen-Schutz ausschalten.'))) return;
+            acc.settings.guard = want; saveSettings();
+            if (want) shell().ensureGuard(true); else Nova.native.guard.stop();
+            render();
+          } }));
+        });
+        return r;
+      }
       function setAge(a) {
         acc.profile.age = Nova.clamp(a, 0, 100); acc.profile.birthday = ''; store.save(true); render();
       }

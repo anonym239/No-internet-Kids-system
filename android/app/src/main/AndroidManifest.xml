@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <application
         android:allowBackup="true"
@@ -31,6 +32,16 @@
 
         </activity>
 
+        <!-- Nova-Schutz: holt Nova zurück, wenn die App ohne Passwort verlassen wird -->
+        <service
+            android:name=".GuardService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Kinderschutz: Die App kann nur mit Passwort verlassen werden." />
+        </service>
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
@@ -43,6 +54,13 @@
     </application>
 
     <!-- Nova selbst braucht KEIN Internet – daher keine INTERNET-Berechtigung. -->
+
+    <!-- Nova-Schutz (Verlassen nur mit Passwort) -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.PACKAGE_USAGE_STATS" tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <!-- Damit Nova prüfen kann, ob die echten Spiele installiert sind (Android 11+) -->
     <queries>

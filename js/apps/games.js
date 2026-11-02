@@ -21,7 +21,7 @@
 
   /* ======================= RAIL RUSH ======================= */
   Nova.registerApp({
-    id: 'runner', name: 'Rail Rush', icon: 'run', folder: 'games', grad: ['#ff6b3d', '#ff3d77'], desc: 'Endlos-Runner: weiche aus, spring und sammle Münzen',
+    id: 'runner', name: 'Rail Rush', icon: 'a-runner', folder: 'games', grad: ['#ff6b3d', '#ff3d77'], desc: 'Endlos-Runner: weiche aus, spring und sammle Münzen',
     mount(body, ctx) {
       const W = 480, H = 760;
       const S = gameShell(body, ctx, 'runner', W, H);
@@ -175,7 +175,7 @@
 
   /* ======================= PULSE DASH ======================= */
   Nova.registerApp({
-    id: 'pulse', name: 'Pulse Dash', icon: 'zap', folder: 'games', grad: ['#7c5cff', '#00e5ff'], desc: 'Spring im Takt über Stacheln und Blöcke',
+    id: 'pulse', name: 'Pulse Dash', icon: 'a-pulse', folder: 'games', grad: ['#7c5cff', '#00e5ff'], desc: 'Spring im Takt über Stacheln und Blöcke',
     mount(body, ctx) {
       const W = 800, H = 450, GY = 360, SZ = 34, PX = 180;
       const S = gameShell(body, ctx, 'pulse', W, H);
@@ -307,7 +307,7 @@
 
   /* ======================= NEON SNAKE ======================= */
   Nova.registerApp({
-    id: 'snake', name: 'Neon Snake', icon: 'snake', folder: 'games', grad: ['#22c55e', '#0ea5e9'], desc: 'Friss, wachse – und beiß dich nicht selbst',
+    id: 'snake', name: 'Neon Snake', icon: 'a-snake', folder: 'games', grad: ['#22c55e', '#0ea5e9'], desc: 'Friss, wachse – und beiß dich nicht selbst',
     mount(body, ctx) {
       const N = 20, CELL = 28, W = N * CELL, H = N * CELL;
       const S = gameShell(body, ctx, 'snake', W, H);
@@ -365,7 +365,7 @@
 
   /* ======================= MEMORY ======================= */
   Nova.registerApp({
-    id: 'memory', name: 'Memory', icon: 'brain', folder: 'games', grad: ['#ec4899', '#f97316'], desc: 'Finde alle Paare so schnell wie möglich',
+    id: 'memory', name: 'Memory', icon: 'a-memory', folder: 'games', grad: ['#ec4899', '#f97316'], desc: 'Finde alle Paare so schnell wie möglich',
     mount(body) {
       const SYMS = ['star', 'music', 'zap', 'moon', 'sun', 'bell', 'flag', 'key', 'gamepad', 'brush', 'snake', 'shield'];
       const COLS = ['#ff5c8a', '#7c5cff', '#00c2a8', '#ffb800', '#4f8cff', '#ff6b3d', '#2ecc71', '#a855f7', '#0ea5e9', '#ec4899', '#22c55e', '#f97316'];
@@ -413,7 +413,7 @@
 
   /* ======================= VIER GEWINNT ======================= */
   Nova.registerApp({
-    id: 'four', name: 'Vier gewinnt', icon: 'dots', folder: 'games', grad: ['#ffb800', '#ff5c8a'], desc: 'Gegen die KI oder zu zweit',
+    id: 'four', name: 'Vier gewinnt', icon: 'a-four', folder: 'games', grad: ['#ffb800', '#ff5c8a'], desc: 'Gegen die KI oder zu zweit',
     mount(body) {
       const C = 7, R = 6;
       let b, turn, mode = 'ai', diff = 2, over, wins = store.score('four');
@@ -506,7 +506,7 @@
 
   /* ======================= BLOCKBRECHER ======================= */
   Nova.registerApp({
-    id: 'bricks', name: 'Blockbrecher', icon: 'bricks', folder: 'games', grad: ['#0ea5e9', '#7c5cff'], desc: 'Zerstöre alle Blöcke mit dem Ball',
+    id: 'bricks', name: 'Blockbrecher', icon: 'a-bricks', folder: 'games', grad: ['#0ea5e9', '#7c5cff'], desc: 'Zerstöre alle Blöcke mit dem Ball',
     mount(body, ctx) {
       const W = 600, H = 760;
       const S = gameShell(body, ctx, 'bricks', W, H);

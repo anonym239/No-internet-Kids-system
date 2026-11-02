@@ -172,5 +172,5 @@
     gen() { const [a, b] = pick(SYN); const wrong = shuffle(SYN.filter((x) => x[0] !== a).map((x) => x[1])).slice(0, 5);
       return { q: 'Was bedeutet fast dasselbe wie „' + a + '"?', type: 'choice', answer: b, choices: choicesOf(b, wrong), explain: { 1: '„' + a + '" und „' + b + '" bedeuten fast dasselbe.' } }; } });
 
-  Nova.learnApp({ id: 'deutsch', name: 'Deutsch', icon: 'book', grad: ['#ef4444', '#f97316'], desc: 'Rechtschreibung, Grammatik & Wortschatz von Klasse 1 bis 9', topics: T });
+  Nova.learnApp({ id: 'deutsch', name: 'Deutsch', icon: 'a-german', grad: ['#ef4444', '#f97316'], desc: 'Rechtschreibung, Grammatik & Wortschatz von Klasse 1 bis 9', topics: T });
 })();

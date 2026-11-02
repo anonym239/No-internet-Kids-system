@@ -1,4 +1,4 @@
-# Nova OS – Beta 0.3
+# Nova OS – Beta 0.4
 
 **Ein komplett internetfreies System für Kinder und Jugendliche – für PC und Handy.**
 Ruhiges, cleanes Design: Seitenleiste mit Ordnern, schlichte Symbole, Dunkel/Hell und ein Schwarz-Weiß-Modus. Wer es lebendiger mag, schaltet in den Einstellungen **Effekte** ein (Glas, Schatten, Animationen, farbige Hintergründe). Kein Server, keine Werbung, keine Datensammlung.
@@ -9,8 +9,8 @@ Unter **[Releases](../../releases)** liegen fertige Dateien:
 
 | Gerät | Datei | Installation |
 |---|---|---|
-| 🤖 Android | `Nova-OS-0.3.1.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
-| 🪟 Windows | `Nova-OS-Setup-0.3.1.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
+| 🤖 Android | `Nova-OS-0.4.0.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
+| 🪟 Windows | `Nova-OS-Setup-0.4.0.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
 
 Die Dateien baut GitHub Actions bei jedem Push automatisch (`.github/workflows/build.yml`).
 
@@ -28,7 +28,10 @@ Die Dateien baut GitHub Actions bei jedem Push automatisch (`.github/workflows/b
 - **Nova erkennt das Alter:** Daraus ergibt sich einer von 5 Erklär-Stilen, von „Ganz einfach“ (kurze Sätze, Äpfel und Bonbons) bis „Sachlich“ (Lehrbuch-Stil). Alle Erklärungen in Mathe und Deutsch passen sich daran an. In den Einstellungen lässt sich der Stil ändern.
 - **Verlassen-Schutz:** Abmelden und das Beenden der App gehen nur mit dem Passwort bzw. der PIN des Kontos (oder der Eltern-PIN).
   - Windows: Klick auf X und Alt+F4 werden abgefangen. Optional gibt es einen Vollbild-Kiosk.
-  - Android: Die Zurück-Taste wird abgefangen. Optional lässt sich die App fixieren (Lock Task) und Nova als Startbildschirm festlegen.
+  - Android: Die Zurück-Taste wird abgefangen. Zusätzlich gibt es den **Nova-Schutz**: Wer Nova oder ein darüber gestartetes Spiel mit **Home** oder **Übersicht** verlässt oder Nova in der Übersicht wegwischt, wird in unter einer Sekunde zurückgeholt und muss das Passwort eingeben. Dafür braucht Nova einmalig die Berechtigungen „Nutzungszugriff“ und „Über anderen Apps einblenden“. Nova führt durch die Einrichtung. Anrufe, Notruf und Berechtigungsdialoge werden nie blockiert.
+  - Ist eine Eltern-PIN eingerichtet, ist zum Verlassen und Abmelden standardmäßig **die Eltern-PIN** nötig. Das gilt auch beim Verlassen eines Spiels. Umstellbar unter Einstellungen → Internet & Schutz.
+  - Läuft die Bildschirmzeit während eines echten Spiels ab, holt der Nova-Schutz Nova zurück und sperrt.
+  - Optional: App fixieren (Lock Task) und Nova als Startbildschirm festlegen
 - Mehrere Konten pro Gerät
 - **Konto-Token**: Das komplette Konto steckt in einem Token (Text oder `.novakey`-Datei, komprimiert und mit Prüfsumme)
   - Mit dem Token stellst du dein Konto **jederzeit** wieder her: nach dem Deinstallieren, auf einem neuen Gerät oder nach dem Löschen der App-Daten
@@ -91,7 +94,7 @@ Hinweis zur Signierung: Die APK wird mit einem Beta-Schlüssel (`android/nova-be
 ```
 index.html
 electron/  Windows-Hülle (Schließen-Schutz, Kiosk, blockiert jedes Netzwerk)
-android/   Android-Projekt (Capacitor; ohne INTERNET-Berechtigung; NovaKiosk-Plugin)
+android/   Android-Projekt (Capacitor; ohne INTERNET-Berechtigung; NovaKiosk- und NovaGuard-Plugin, GuardService)
 css/style.css
 js/core/   sha256 · util · icons · store (Konten/Token/Sync) · screentime · persona (Alter) · native · shell (UI) · onboarding
 js/apps/   kit · games · storegames · learn (Mathe) · learn-de (Deutsch) · creative · tools · system
@@ -100,6 +103,6 @@ js/apps/   kit · games · storegames · learn (Mathe) · learn-de (Deutsch) · 
 ## Bekannte Grenzen der Beta
 - Der Speicher pro Browser ist auf ca. 5 MB begrenzt (betrifft viele Zeichnungen)
 - Ohne Internet gibt es keinen automatischen Sync: Synchronisiert wird über den Token, also per Datei oder Kopieren
-- Die Spielzeit in echten Spielen zählt erst, wenn man zu Nova zurückkehrt. Während des Spiels kann Nova nicht unterbrechen.
+- Ohne die zwei Berechtigungen kann eine normale Android-App Home und Übersicht nicht abfangen. Erst mit dem Nova-Schutz klappt das.
 - Ein vollständiger Kiosk ohne Bestätigung ist unter Android nur mit „Geräteinhaber“-Rechten möglich. Die Beta nutzt das normale „App fixieren“.
 - Wer technisch versiert ist, kann die lokalen Daten im Browser verändern. Die Bildschirmzeit ist als Familien-Werkzeug gedacht, nicht als Sicherheitssperre

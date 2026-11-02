@@ -41,7 +41,7 @@
   };
 
   Nova.registerApp({
-    id: 'realgames', name: 'Echte Spiele', icon: 'store', folder: 'games', grad: ['#16a34a', '#0ea5e9'], desc: 'Subway Surfers, Geometry Dash & mehr – einmal installieren, dann offline spielen',
+    id: 'realgames', name: 'Echte Spiele', icon: 'a-store', folder: 'games', grad: ['#16a34a', '#0ea5e9'], desc: 'Subway Surfers, Geometry Dash & mehr – einmal installieren, dann offline spielen',
     mount(body, ctx) {
       const acc = ctx.acc;
       const wrap = h('div', { class: 'rg' });
@@ -77,7 +77,7 @@
           h('div', { class: 'rg-grid' }, GAMES.map((g) => {
             const inst = !!status[g.pkg];
             let btn;
-            if (inst) btn = h('button', { class: 'btn primary sm', onclick: async () => { Nova.shell.markExternal(); if (!(await Nova.native.launch(g.pkg))) ui.toast('Spiel konnte nicht gestartet werden', 'err'); }, html: icon('play') + ' Spielen' });
+            if (inst) btn = h('button', { class: 'btn primary sm', onclick: async () => { Nova.shell.markExternal(); const rem = Nova.st.remaining(acc); if (rem <= 0) return Nova.shell.checkLock(); if (!(await Nova.native.launch(g.pkg, rem === Infinity ? 0 : Date.now() + rem * 1000))) ui.toast('Spiel konnte nicht gestartet werden', 'err'); }, html: icon('play') + ' Spielen' });
             else if (offline) btn = h('button', { class: 'btn sm', disabled: true, html: icon('lock') + ' Gesperrt' });
             else if (!android) btn = h('button', { class: 'btn sm', disabled: true }, 'Nur Android');
             else btn = h('button', { class: 'btn sm', onclick: async () => { if (Nova.st.blockReason(acc)) return Nova.shell.checkLock(); await Nova.native.openStore(g.pkg); ui.toast('Im Play Store auf „Installieren" tippen, dann zurück zu Nova'); }, html: icon('download') + ' Installieren' });

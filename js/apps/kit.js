@@ -46,8 +46,10 @@
       const g = cv.getContext('2d');
       g.setTransform(dpr, 0, 0, dpr, 0, 0);
       const fit = () => {
-        const r = stage.getBoundingClientRect();
-        const s = Math.min(r.width / W, r.height / H);
+        const cs = getComputedStyle(stage);
+        const aw = stage.clientWidth - parseFloat(cs.paddingLeft) - parseFloat(cs.paddingRight);
+        const ah = stage.clientHeight - parseFloat(cs.paddingTop) - parseFloat(cs.paddingBottom);
+        const s = Math.max(0.1, Math.min(aw / W, ah / H));
         box.style.width = W * s + 'px'; box.style.height = H * s + 'px';
       };
       const ro = new ResizeObserver(fit); ro.observe(stage); fit();

@@ -1244,3 +1244,6 @@ body[data-icons="color"] .app-ic { color: #fff; border: 0; }
   .profile-head > .grow { min-width: 150px; }
   .profile-head > .btn { width: 100%; }
 }
+
+.game-stage { overflow: hidden; }
+.game-box { max-width: 100%; max-height: 100%; }

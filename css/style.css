@@ -1128,3 +1128,19 @@ body[data-icons="color"] .app-ic { color: #fff; border: 0; }
 .guard-step.done { opacity: .6; }
 .guard-n { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--surface-2); font-weight: 600; font-size: 13px; flex: none; }
 .guard-step.done .guard-n { background: var(--text); color: var(--bg); }
+
+/* Konto sichern / wiederherstellen */
+.token-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.token-actions .btn { flex: 1; min-width: 150px; }
+.saved-where:empty { display: none; }
+.saved-where { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 10px; background: var(--surface-2); }
+.saved-where > span { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--text); color: var(--bg); flex: none; }
+.saved-where > span .ic { width: 16px; height: 16px; stroke-width: 2.4; }
+.saved-where .small { word-break: break-all; }
+.token-details summary { cursor: pointer; color: var(--muted); font-size: 13px; font-weight: 550; margin-bottom: 8px; }
+.dropzone { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 16px; border: 1.5px dashed var(--surface-3); border-radius: 12px; text-align: center; transition: border-color .15s, background .15s; }
+.dropzone:hover, .dropzone.over { border-color: var(--text); background: var(--surface-2); }
+.dropzone > span:first-child .ic { width: 26px; height: 26px; }
+.backup-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); text-align: left; }
+.backup-item:hover { border-color: var(--surface-3); }
+.found-box { display: flex; flex-direction: column; gap: 8px; }

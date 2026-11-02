@@ -9,8 +9,8 @@ Unter **[Releases](../../releases)** liegen fertige Dateien:
 
 | Gerät | Datei | Installation |
 |---|---|---|
-| 🤖 Android | `Nova-OS-0.4.0.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
-| 🪟 Windows | `Nova-OS-Setup-0.4.0.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
+| 🤖 Android | `Nova-OS-0.4.1.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
+| 🪟 Windows | `Nova-OS-Setup-0.4.1.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
 
 Die Dateien baut GitHub Actions bei jedem Push automatisch (`.github/workflows/build.yml`).
 
@@ -37,6 +37,12 @@ Die Dateien baut GitHub Actions bei jedem Push automatisch (`.github/workflows/b
   - Mit dem Token stellst du dein Konto **jederzeit** wieder her: nach dem Deinstallieren, auf einem neuen Gerät oder nach dem Löschen der App-Daten
   - **Sync ohne Internet:** Gibt es das Konto auf einem Gerät schon, werden beim Import beide Stände zusammengeführt (Aufgaben, Notizen, Bilder, Highscores, Ordner …)
   - Erinnerung zur Sicherung, wenn die letzte Sicherung älter als 7 Tage ist
+  - **Wo ist meine Datei?**
+    - Android: App „Dateien“ → **Dokumente › Nova** (Datei `nova-<name>-<id>.novakey`). Über „Teilen…“ kann man sie zusätzlich in Google Drive speichern oder sich selbst schicken.
+    - Windows: **Dokumente\Nova**
+    - Browser: **Downloads**
+  - **Automatische Sicherung:** Die Apps für Android und Windows schreiben bei Änderungen, beim Abmelden und beim Beenden automatisch eine aktuelle Sicherung nach *Dokumente › Nova*. Die Datei bleibt auch nach dem Deinstallieren erhalten.
+  - **Wiederherstellen:** Auf dem Anmeldebildschirm „Konto wiederherstellen“ wählen, dann die Datei auswählen (am PC auch per Drag & Drop) oder den Token-Text einfügen. Gefundene Sicherungen bietet Nova direkt an.
 
 ### Ordner
 - **Spiele**, **Kreativ**, **Werkzeuge**, **System**

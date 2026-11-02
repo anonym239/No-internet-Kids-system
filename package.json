@@ -1,7 +1,7 @@
 {
   "name": "nova-os",
   "productName": "Nova OS",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Nova OS – internetfreies System für Kinder und Jugendliche",
   "author": "Nova OS",
   "license": "UNLICENSED",
@@ -17,7 +17,9 @@
     "@capacitor/android": "^8.6.0",
     "@capacitor/app": "^8.1.2",
     "@capacitor/app-launcher": "^8.0.1",
-    "@capacitor/core": "^8.6.0"
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/filesystem": "^8.1.5",
+    "@capacitor/share": "^8.0.3"
   },
   "devDependencies": {
     "@capacitor/cli": "^8.6.0",
@@ -28,10 +30,24 @@
     "appId": "com.novaos.kids",
     "productName": "Nova OS",
     "copyright": "Nova OS",
-    "directories": { "output": "dist", "buildResources": "build" },
-    "files": ["electron/**", "www/**", "package.json"],
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "electron/**",
+      "www/**",
+      "package.json"
+    ],
     "win": {
-      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
       "icon": "build/icon.ico",
       "artifactName": "Nova-OS-Setup-${version}.${ext}"
     },

@@ -94,10 +94,21 @@
       )) : null,
       h('div', { class: 'login-actions' },
         h('button', { class: 'btn primary', onclick: () => renderCreate(panel), html: icon('plus') + ' Neues Konto' }),
-        h('button', { class: 'btn', onclick: () => importDialog(panel), html: icon('sync') + ' Token / Sync' })
+        h('button', { class: 'btn', onclick: () => importDialog(panel), html: icon('key') + ' Konto wiederherstellen' })
       ),
       h('button', { class: 'link-btn', onclick: remoteDialog, html: icon('remote') + ' Eltern-Fernsteuerung' })
     ].filter(Boolean));
+    // Sicherungen auf dem Gerät, deren Konto hier noch fehlt (z. B. nach Neuinstallation)
+    findBackups().then((list) => {
+      const missing = list.filter((b) => !store.ids().includes(b.acc.id));
+      if (!missing.length || !document.body.contains(panel)) return;
+      const box = h('div', { class: 'found-box' }, h('div', { class: 'muted small' }, 'Sicherung gefunden'),
+        missing.map((b) => h('button', { class: 'backup-item', onclick: () => restoreFromText(b.file.text, panel) },
+          avatar(b.acc, 'sm'), h('div', { class: 'grow' }, h('b', null, b.acc.name), h('div', { class: 'muted xs' }, b.file.name)),
+          h('span', { class: 'btn sm primary' }, 'Wiederherstellen'))));
+      const actions = panel.querySelector('.login-actions');
+      if (actions) actions.before(box);
+    });
   }
 
   function renderPin(panel, acc) {
@@ -186,6 +197,7 @@
   async function logout() {
     const acc = store.current;
     if (acc && !(await askExitAuth(acc, 'Abmelden', 'Du möchtest dich abmelden.'))) return;
+    await autoBackupNow(true);
     Nova.native.setKiosk(false, true);
     if (Nova.native.isAndroid) Nova.native.guard.stop();
     store.logout(); showLogin();
@@ -199,7 +211,7 @@
     if (!acc) return Nova.native.exit();
     exiting = true;
     try {
-      if (await askExitAuth(acc, 'Nova verlassen?', 'Du möchtest Nova verlassen.')) { allowUnload = true; Nova.native.exit(); }
+      if (await askExitAuth(acc, 'Nova verlassen?', 'Du möchtest Nova verlassen.')) { allowUnload = true; await autoBackupNow(true); Nova.native.exit(); }
     } finally { exiting = false; }
   }
   let allowUnload = false;
@@ -239,55 +251,115 @@
   }
 
   /* ================= Token / Sync ================= */
+  const slug = (n) => String(n || 'konto').toLowerCase().replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/ß/g, 'ss').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+  const backupName = (acc) => 'nova-' + slug(acc.name) + '-' + acc.id.toLowerCase() + '.novakey';
+
   async function tokenDialog() {
     const acc = store.current;
     const token = await store.exportToken(acc);
+    const fname = backupName(acc);
     const ta = h('textarea', { class: 'input token-box', readonly: true, rows: 4 });
     ta.value = token;
-    const fname = 'nova-' + acc.name.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Nova.dayKey() + '.novakey';
+    const where = h('div', { class: 'saved-where' });
+    const showWhere = (txt) => { where.innerHTML = ''; where.append(h('span', { html: icon('check') }), h('div', null, h('b', null, 'Gespeichert'), h('div', { class: 'muted small' }, txt))); };
+    const canShare = Nova.native.isAndroid || !!navigator.canShare;
     await ui.dialog({
-      title: 'Konto-Token',
+      title: 'Konto sichern',
       wide: true,
       body: h('div', { class: 'stack' },
-        h('p', { class: 'muted' }, 'Dieser Token ist dein komplettes Konto (Einstellungen, Aufgaben, Notizen, Zeichnungen, Highscores, Bildschirmzeit). Er funktioniert für immer – auch wenn die App gelöscht oder neu installiert wird. Bewahre ihn gut auf und teile ihn mit niemandem.'),
-        h('div', { class: 'kv' }, h('span', { class: 'muted' }, 'Konto-ID'), h('b', { class: 'mono' }, fmtId(acc.id))),
-        ta,
-        h('div', { class: 'row gap' },
-          h('button', { class: 'btn', onclick: async () => ui.toast((await Nova.copyText(token)) ? 'Token kopiert' : 'Kopieren nicht möglich'), html: icon('copy') + ' Kopieren' }),
-          h('button', { class: 'btn primary', onclick: () => { Nova.download(fname, token, 'text/plain'); ui.toast('Datei gespeichert (Downloads)'); }, html: icon('download') + ' Als Datei speichern' })
-        ),
-        h('p', { class: 'small muted' }, 'Tipp: Speichere die .novakey-Datei in deinem Downloads-Ordner, auf einem USB-Stick oder schicke sie dir selbst. Zum Synchronisieren mit einem zweiten Gerät dort „Token / Sync" öffnen und den Token einfügen – beide Stände werden zusammengeführt.')
+        h('p', { class: 'muted' }, 'Der Konto-Token ist dein komplettes Konto. Mit ihm stellst du alles wieder her – auch nach dem Löschen der App oder auf einem anderen Gerät. Teile ihn mit niemandem.'),
+        h('div', { class: 'kv' }, h('span', { class: 'muted' }, 'Dateiname'), h('b', { class: 'mono small' }, fname)),
+        h('div', { class: 'token-actions' },
+          h('button', { class: 'btn primary', onclick: async () => {
+            const r = await Nova.native.saveFile(fname, token);
+            if (r.ok) { showWhere(r.where); ui.toast('Gespeichert: ' + r.where); } else if (!r.cancelled) ui.toast('Speichern nicht möglich – nutze „Teilen" oder „Kopieren"', 'err');
+          }, html: icon('download') + ' Als Datei speichern' }),
+          canShare ? h('button', { class: 'btn', onclick: async () => { try { await Nova.native.shareFile(fname, token); } catch (e) { /* abgebrochen */ } }, html: icon('upload') + ' Teilen…' }) : null,
+          h('button', { class: 'btn', onclick: async () => ui.toast((await Nova.copyText(token)) ? 'Token kopiert' : 'Kopieren nicht möglich'), html: icon('copy') + ' Kopieren' })),
+        where,
+        h('details', { class: 'token-details' }, h('summary', null, 'Token als Text anzeigen'), ta),
+        h('p', { class: 'small muted' }, Nova.native.isAndroid
+          ? 'Die Datei landet im Ordner „Dokumente › Nova" (App „Dateien"). Zusätzlich speichert Nova dort automatisch eine Sicherung. Am sichersten: über „Teilen" zusätzlich in Google Drive speichern oder an dich selbst schicken.'
+          : Nova.native.isElectron ? 'Standardordner: Dokumente › Nova. Dort legt Nova auch automatisch Sicherungen ab.'
+          : 'Die Datei landet in deinem Download-Ordner.')
       ),
       actions: [{ label: 'Fertig', primary: true }]
     });
     if (lastHome) refreshHome();
   }
 
+  /* Automatische Sicherung (Android: Dokumente/Nova, PC: Dokumente\Nova) */
+  let lastAutoAt = 0;
+  async function autoBackupNow(force) {
+    const acc = store.current;
+    if (!acc || !Nova.native.canAutoBackup || acc.settings.autoBackup === false) return;
+    if (!force && acc.updated <= lastAutoAt) return;
+    const token = await store.exportToken(acc);
+    if (await Nova.native.autoBackup(backupName(acc), token)) lastAutoAt = Date.now();
+  }
+  setInterval(() => autoBackupNow(false), 120000);
+  document.addEventListener('visibilitychange', () => { if (document.hidden) autoBackupNow(false); });
+
+  /* Gefundene Sicherungen auf dem Gerät (Dokumente/Nova, Downloads) */
+  async function findBackups() {
+    const files = await Nova.native.listBackups();
+    const out = [];
+    for (const f of files) {
+      try { const a = await store.parseToken(f.text); out.push({ file: f, acc: a }); } catch (e) { /* keine gültige Datei */ }
+    }
+    const best = new Map();
+    for (const b of out) { const prev = best.get(b.acc.id); if (!prev || (b.acc.updated || 0) > (prev.acc.updated || 0)) best.set(b.acc.id, b); }
+    return Array.from(best.values());
+  }
+
+  async function restoreFromText(text, panel) {
+    try {
+      const { acc, synced } = await store.importToken(text);
+      ui.toast(synced ? 'Konto synchronisiert ✓' : 'Konto „' + acc.name + '" wiederhergestellt ✓');
+      if (panel) renderPin(panel, acc);
+      else if (store.current && store.current.id === acc.id) { applyTheme(store.current); refreshHome(); }
+      else showLogin();
+      return true;
+    } catch (e) { ui.toast(e.message || 'Wiederherstellen fehlgeschlagen', 'err'); return false; }
+  }
+
   function importDialog(panel) {
-    const ta = h('textarea', { class: 'input token-box', rows: 5, placeholder: 'NOVA1.…  Token hier einfügen' });
-    const file = h('input', { type: 'file', accept: '.novakey,.txt,text/plain', style: { display: 'none' } });
-    file.addEventListener('change', async () => { const f = file.files[0]; if (f) ta.value = (await f.text()).trim(); });
-    return ui.dialog({
-      title: 'Token importieren / Sync',
+    const ta = h('textarea', { class: 'input token-box', rows: 4, placeholder: 'NOVA1.…  oder Token hier einfügen' });
+    const file = h('input', { type: 'file', style: { display: 'none' } });
+    const fileName = h('span', { class: 'muted small' });
+    const readFile = async (f) => { if (!f) return; if (f.size > 20 * 1024 * 1024) return ui.toast('Datei zu groß', 'err'); ta.value = (await f.text()).trim(); fileName.textContent = '✓ ' + f.name; };
+    file.addEventListener('change', () => readFile(file.files[0]));
+    const found = h('div', { class: 'stack tight' });
+    const drop = h('button', { class: 'dropzone', onclick: () => file.click() },
+      h('span', { html: icon('upload') }), h('b', null, 'Token-Datei auswählen'),
+      h('span', { class: 'muted small' }, Nova.native.isElectron ? 'oder hierher ziehen · meist in Downloads oder Dokumente › Nova' : 'Datei „nova-…novakey" – meist im Ordner Downloads oder Dokumente › Nova'),
+      fileName);
+    ['dragover', 'dragenter'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+    ['dragleave', 'drop'].forEach((ev) => drop.addEventListener(ev, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+    drop.addEventListener('drop', (e) => readFile(e.dataTransfer.files[0]));
+    const dlg = ui.dialog({
+      title: 'Konto wiederherstellen',
       wide: true,
-      body: h('div', { class: 'stack' },
-        h('p', { class: 'muted' }, 'Füge deinen Konto-Token ein oder öffne deine .novakey-Datei. Gibt es das Konto auf diesem Gerät schon, werden beide Stände synchronisiert.'),
-        ta, file,
-        h('button', { class: 'btn', onclick: () => file.click(), html: icon('upload') + ' Datei öffnen' })
-      ),
+      body: (close) => {
+        findBackups().then((list) => {
+          if (!list.length) return;
+          found.append(h('div', { class: 'field' }, h('span', null, 'Auf diesem Gerät gefunden')),
+            list.map((b) => h('button', { class: 'backup-item', onclick: async () => { if (await restoreFromText(b.file.text, panel)) close(true); } },
+              avatar(b.acc, 'sm'),
+              h('div', { class: 'grow' }, h('b', null, b.acc.name), h('div', { class: 'muted xs' }, b.file.name + ' · ' + Nova.relTime(b.acc.updated || b.file.mtime || Date.now()))),
+              h('span', { class: 'btn sm primary' }, 'Wiederherstellen'))));
+        });
+        return h('div', { class: 'stack' },
+          h('p', { class: 'muted' }, 'Wähle deine Token-Datei aus oder füge den Token-Text ein. Existiert das Konto schon auf diesem Gerät, werden beide Stände zusammengeführt (Sync).'),
+          found, drop, file,
+          h('details', { class: 'token-details' }, h('summary', null, 'Token-Text einfügen'), ta));
+      },
       actions: [
         { label: 'Abbrechen', ghost: true },
-        { label: 'Importieren', primary: true, onClick: async () => {
-          try {
-            const { acc, synced } = await store.importToken(ta.value);
-            ui.toast(synced ? 'Konto synchronisiert ✓' : 'Konto importiert ✓');
-            if (panel) renderPin(panel, acc);
-            else if (store.current && store.current.id === acc.id) { applyTheme(store.current); refreshHome(); }
-            return true;
-          } catch (e) { ui.toast(e.message || 'Import fehlgeschlagen', 'err'); return false; }
-        } }
+        { label: 'Wiederherstellen', primary: true, onClick: async () => { if (!ta.value.trim()) { ui.toast('Bitte zuerst eine Datei auswählen oder den Token einfügen', 'err'); return false; } return (await restoreFromText(ta.value, panel)) || false; } }
       ]
     });
+    return dlg;
   }
 
   const fmtId = (id) => id.slice(0, 4) + '-' + id.slice(4);
@@ -826,5 +898,5 @@
     updatePill(); checkLock();
   }
 
-  Nova.shell = { handleBack, markExternal, onResume, onGuardReturn, ensureGuard, guardSetupDialog, exitNeedsParent, askExitAuth, logout, requestExit, askSecret, askPassword, showLogin, showHome, refreshHome, launch, closeWin, tokenDialog, importDialog, remoteDialog, applyTheme, askPin, avatar, appIcon, seg, fmtId, checkLock, hideLock, updatePill, APPS, FOLDERS, WALLPAPERS, ACCENTS };
+  Nova.shell = { autoBackupNow, findBackups, backupName, handleBack, markExternal, onResume, onGuardReturn, ensureGuard, guardSetupDialog, exitNeedsParent, askExitAuth, logout, requestExit, askSecret, askPassword, showLogin, showHome, refreshHome, launch, closeWin, tokenDialog, importDialog, remoteDialog, applyTheme, askPin, avatar, appIcon, seg, fmtId, checkLock, hideLock, updatePill, APPS, FOLDERS, WALLPAPERS, ACCENTS };
 })();

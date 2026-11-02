@@ -44,6 +44,66 @@
       window.open(web, '_blank', 'noopener');
       return true;
     },
+    /* ---- Dateien: Token speichern, teilen, Sicherungen finden ---- */
+    BACKUP_DIR: 'Nova',
+    async saveFile(name, text) {
+      if (isAndroid) {
+        const FS = plugin('Filesystem');
+        try {
+          await FS.writeFile({ path: native.BACKUP_DIR + '/' + name, data: text, directory: 'DOCUMENTS', encoding: 'utf8', recursive: true });
+          return { ok: true, where: 'Dokumente › Nova › ' + name };
+        } catch (e) {
+          try { await native.shareFile(name, text); return { ok: true, where: 'über „Teilen"' }; } catch (_) { return { ok: false, error: e.message }; }
+        }
+      }
+      if (isElectron) {
+        const r = await window.novaElectron.saveFile(name, text);
+        return r && r.path ? { ok: true, where: r.path } : { ok: false, cancelled: true };
+      }
+      Nova.download(name, text, 'text/plain');
+      return { ok: true, where: 'Downloads › ' + name };
+    },
+    async shareFile(name, text) {
+      if (isAndroid) {
+        const FS = plugin('Filesystem');
+        const w = await FS.writeFile({ path: name, data: text, directory: 'CACHE', encoding: 'utf8' });
+        await plugin('Share').share({ title: 'Nova Konto-Token', text: 'Mein Nova Konto-Token (gut aufbewahren!)', files: [w.uri], dialogTitle: 'Token speichern oder senden' });
+        return true;
+      }
+      if (navigator.canShare) {
+        const f = new File([text], name, { type: 'text/plain' });
+        if (navigator.canShare({ files: [f] })) { await navigator.share({ files: [f], title: 'Nova Konto-Token' }); return true; }
+      }
+      Nova.download(name, text, 'text/plain');
+      return true;
+    },
+    /* Automatische Sicherung (überschreibt immer dieselbe Datei pro Konto) */
+    async autoBackup(name, text) {
+      try {
+        if (isAndroid) { await plugin('Filesystem').writeFile({ path: native.BACKUP_DIR + '/' + name, data: text, directory: 'DOCUMENTS', encoding: 'utf8', recursive: true }); return true; }
+        if (isElectron) { await window.novaElectron.backupWrite(name, text); return true; }
+      } catch (e) { /* kein Zugriff */ }
+      return false;
+    },
+    async listBackups() {
+      try {
+        if (isElectron) return (await window.novaElectron.backupList()) || [];
+        if (isAndroid) {
+          const FS = plugin('Filesystem');
+          const r = await FS.readdir({ path: native.BACKUP_DIR, directory: 'DOCUMENTS' });
+          const out = [];
+          for (const f of r.files || []) {
+            const nm = typeof f === 'string' ? f : f.name;
+            if (!/\.novakey$/i.test(nm)) continue;
+            try { const d = await FS.readFile({ path: native.BACKUP_DIR + '/' + nm, directory: 'DOCUMENTS', encoding: 'utf8' }); out.push({ name: nm, text: d.data, mtime: f.mtime || 0 }); } catch (e) {}
+          }
+          return out;
+        }
+      } catch (e) { /* Ordner existiert nicht / kein Zugriff */ }
+      return [];
+    },
+    canAutoBackup: isAndroid || isElectron,
+
     openExternal(url) {
       if (isElectron) return window.novaElectron.openExternal(url);
       if (isAndroid) { try { return plugin('AppLauncher').openUrl({ url }); } catch (e) {} }

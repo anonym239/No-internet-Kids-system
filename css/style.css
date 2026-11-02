@@ -1144,3 +1144,103 @@ body[data-icons="color"] .app-ic { color: #fff; border: 0; }
 .backup-item { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--surface); text-align: left; }
 .backup-item:hover { border-color: var(--surface-3); }
 .found-box { display: flex; flex-direction: column; gap: 8px; }
+
+/* ================================================================
+   Sichere Ränder (Kamera-Loch, Notch, Systemleisten)
+   --sat/--sab/--sal/--sar setzt die Android-App, env() nutzen iOS/PWA
+   ================================================================ */
+:root {
+  --safe-t: max(env(safe-area-inset-top, 0px), var(--sat, 0px));
+  --safe-b: max(env(safe-area-inset-bottom, 0px), var(--sab, 0px));
+  --safe-l: max(env(safe-area-inset-left, 0px), var(--sal, 0px));
+  --safe-r: max(env(safe-area-inset-right, 0px), var(--sar, 0px));
+}
+.topbar { box-sizing: border-box; height: calc(56px + var(--safe-t)); padding: var(--safe-t) calc(20px + var(--safe-r)) 0 calc(20px + var(--safe-l)); }
+.home-layout { padding-left: var(--safe-l); padding-right: var(--safe-r); }
+.home-main { padding-bottom: calc(64px + var(--safe-b)); }
+.login { padding: calc(32px + var(--safe-t)) calc(clamp(16px, 6vw, 96px) + var(--safe-r)) calc(32px + var(--safe-b)) calc(clamp(16px, 6vw, 96px) + var(--safe-l)); }
+.lock-wrap, .dialog-wrap { padding: calc(16px + var(--safe-t)) calc(16px + var(--safe-r)) calc(16px + var(--safe-b)) calc(16px + var(--safe-l)); }
+#toasts { top: calc(14px + var(--safe-t)); }
+.game-stage { padding: 10px calc(10px + var(--safe-r)) calc(10px + var(--safe-b)) calc(10px + var(--safe-l)); }
+.dialog { max-height: calc(100vh - 32px - var(--safe-t) - var(--safe-b)); max-height: calc(100dvh - 32px - var(--safe-t) - var(--safe-b)); }
+
+/* ================================================================
+   Handy: alles passt sich an – nichts darf breiter als der Bildschirm sein
+   ================================================================ */
+.login > *, .login-panel, .login-panel > *, .wiz-body, .wiz-body > *, .dialog > *, .stack > * { min-width: 0; }
+.btn { max-width: 100%; }
+@media (max-width: 860px) {
+  .login { grid-template-columns: minmax(0, 1fr); padding: calc(20px + var(--safe-t)) calc(16px + var(--safe-r)) calc(24px + var(--safe-b)) calc(16px + var(--safe-l)); }
+  .login-panel { width: 100%; max-width: 560px; justify-self: center; padding: 22px 18px; }
+  .login-clock { font-size: clamp(56px, 18vw, 84px); }
+  .win-head { min-height: calc(54px + var(--safe-t)); padding: calc(6px + var(--safe-t)) calc(10px + var(--safe-r)) 6px calc(8px + var(--safe-l)); }
+  .win-body { padding: 14px calc(14px + var(--safe-r)) calc(18px + var(--safe-b)) calc(14px + var(--safe-l)); }
+  .win-body.full { padding: 8px calc(8px + var(--safe-r)) calc(10px + var(--safe-b)) calc(8px + var(--safe-l)); }
+  .home-main { padding: 18px 14px calc(40px + var(--safe-b)); }
+  /* Knöpfe dürfen umbrechen statt aus dem Bild zu ragen */
+  .btn { white-space: normal; height: auto; min-height: 40px; padding-top: 8px; padding-bottom: 8px; line-height: 1.25; text-align: center; }
+  .btn.sm { min-height: 34px; padding-top: 6px; padding-bottom: 6px; }
+  .btn.lg { min-height: 48px; }
+  .login-actions { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .dialog { padding: 20px 18px; border-radius: 16px; }
+  .dialog-actions { gap: 8px; }
+  .dialog-actions .btn { flex: 1 1 auto; }
+  .seg { max-width: 100%; }
+  .seg button { flex: 1 1 auto; padding: 0 10px; }
+  .chip-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .chip-grid .chip { white-space: normal; height: auto; min-height: 42px; padding: 6px 10px; }
+  .grid2 { grid-template-columns: minmax(0, 1fr); }
+  .kv { flex-wrap: wrap; }
+  .kv > * { min-width: 0; overflow-wrap: anywhere; }
+  .set-row { gap: 10px; }
+  .set-row > .grow { min-width: 100%; }
+  .set-row .seg { width: 100%; }
+  .profile-head { gap: 14px; }
+  .profile-head .avatar.xl { width: 64px; height: 64px; font-size: 26px; }
+  .learn-hero h2 { font-size: 21px; }
+  .lesson h2 { font-size: 22px; }
+  .wiz-title h2 { font-size: 21px; }
+  .age-pick { gap: 14px; }
+  .token-actions .btn { min-width: 0; flex: 1 1 140px; }
+  .rg-banner .grow { min-width: 0; flex: 1 1 200px; }
+  .notice { flex-wrap: wrap; }
+  .notice .grow { min-width: 0; flex: 1 1 180px; }
+  .page-head h1 { overflow-wrap: anywhere; }
+  .tm-ring { width: min(280px, 70vw); }
+  .calc-wrap { grid-template-columns: minmax(0, 1fr); }
+  .todo-add > .input.grow { flex-basis: 100%; }
+  .todo-add { flex-wrap: wrap; }
+  .card-add { grid-template-columns: minmax(0, 1fr); }
+  .beats-bar > .row { flex-wrap: wrap; }
+  .draw-bar { gap: 10px; }
+  .size-wrap { min-width: 0; flex: 1 1 120px; }
+  .pix-side .palette { max-width: 100%; }
+}
+@media (max-width: 400px) {
+  .login-actions { grid-template-columns: minmax(0, 1fr); }
+  .stats-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .stats-row .stat:last-child { grid-column: span 2; }
+  .learn-stats > div { min-width: 0; padding: 8px 6px; }
+  .pin-pad { grid-template-columns: repeat(3, 62px); gap: 10px; }
+  .pin-key { width: 62px; height: 62px; font-size: 23px; }
+  .quiz-choices { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .quiz-q.big { font-size: clamp(26px, 9vw, 36px); }
+  .ck { height: 54px; font-size: 20px; }
+  .app-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 340px) {
+  .app-grid { grid-template-columns: minmax(0, 1fr); }
+  .stats-row { grid-template-columns: minmax(0, 1fr); }
+  .stats-row .stat:last-child { grid-column: auto; }
+}
+/* Querformat am Handy: Fenster und Ränder */
+@media (max-height: 560px) and (orientation: landscape) {
+  .win-head { min-height: calc(46px + var(--safe-t)); padding: calc(4px + var(--safe-t)) calc(10px + var(--safe-r)) 4px calc(10px + var(--safe-l)); }
+  .win-body { padding: 10px calc(14px + var(--safe-r)) calc(12px + var(--safe-b)) calc(14px + var(--safe-l)); }
+  .home-side { padding-left: calc(12px + var(--safe-l)); }
+  .login { padding: calc(12px + var(--safe-t)) calc(20px + var(--safe-r)) calc(12px + var(--safe-b)) calc(20px + var(--safe-l)); }
+}
+@media (max-width: 480px) {
+  .profile-head > .grow { min-width: 150px; }
+  .profile-head > .btn { width: 100%; }
+}

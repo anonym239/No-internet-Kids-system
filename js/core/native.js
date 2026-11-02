@@ -145,6 +145,18 @@
 
     init({ onBack, onExitRequest, onResume, onGuardReturn }) {
       if (isAndroid) {
+        document.documentElement.classList.add('is-android');
+        const setInsets = async () => {
+          try {
+            const r = await plugin('NovaKiosk').insets();
+            const st = document.documentElement.style;
+            st.setProperty('--sat', (r.top || 0) + 'px'); st.setProperty('--sab', (r.bottom || 0) + 'px');
+            st.setProperty('--sal', (r.left || 0) + 'px'); st.setProperty('--sar', (r.right || 0) + 'px');
+          } catch (e) {}
+        };
+        setInsets(); setTimeout(setInsets, 600); window.addEventListener('resize', () => setTimeout(setInsets, 200));
+      }
+      if (isAndroid) {
         const G = plugin('NovaGuard');
         if (G && onGuardReturn) {
           G.addListener('returned', (d) => onGuardReturn(d && d.reason));

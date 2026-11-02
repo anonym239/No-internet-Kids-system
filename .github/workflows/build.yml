@@ -9,6 +9,11 @@ on:
 permissions:
   contents: write
 
+# Läufe nacheinander abarbeiten, damit immer die neueste Version „Latest“ wird
+concurrency:
+  group: nova-build-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   android:
     name: Android APK

@@ -61,6 +61,17 @@ public class NovaKioskPlugin extends Plugin {
         }
     }
 
+    /** Abstände für Kamera-Loch/Notch in dp (Nova setzt sie als CSS-Variablen) */
+    @PluginMethod
+    public void insets(PluginCall call) {
+        JSObject r = new JSObject();
+        r.put("top", MainActivity.insetTop);
+        r.put("bottom", MainActivity.insetBottom);
+        r.put("left", MainActivity.insetLeft);
+        r.put("right", MainActivity.insetRight);
+        call.resolve(r);
+    }
+
     private boolean isLocked() {
         ActivityManager am = (ActivityManager) getContext().getSystemService(Context.ACTIVITY_SERVICE);
         if (am == null) return false;

@@ -7,8 +7,8 @@ android {
         applicationId "com.novaos.kids"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 7
-        versionName "0.4.2"
+        versionCode 8
+        versionName "1.0.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -18,12 +18,13 @@ android {
     }
     signingConfigs {
         release {
-            // Beta-Schlüssel liegt im Repo. Für eine echte Veröffentlichung eigenen Schlüssel über
+            // Signaturschlüssel liegt im Repo (damit Updates über die alte Version installiert werden können).
+            // Optional eigenen, geheimen Schlüssel über
             // die Umgebungsvariablen NOVA_KEYSTORE / NOVA_KEYSTORE_PASSWORD / NOVA_KEY_ALIAS / NOVA_KEY_PASSWORD setzen.
-            storeFile file(System.getenv("NOVA_KEYSTORE") ?: "../nova-beta.keystore")
-            storePassword System.getenv("NOVA_KEYSTORE_PASSWORD") ?: "novabeta123"
+            storeFile file(System.getenv("NOVA_KEYSTORE") ?: "../nova-release.keystore")
+            storePassword System.getenv("NOVA_KEYSTORE_PASSWORD") ?: "nova-release-key"
             keyAlias System.getenv("NOVA_KEY_ALIAS") ?: "nova"
-            keyPassword System.getenv("NOVA_KEY_PASSWORD") ?: "novabeta123"
+            keyPassword System.getenv("NOVA_KEY_PASSWORD") ?: "nova-release-key"
         }
     }
     buildTypes {

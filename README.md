@@ -1,4 +1,4 @@
-# Nova OS 0.4
+# Nova OS 1.0
 
 **Ein komplett internetfreies System für Kinder und Jugendliche – für PC und Handy.**
 Ruhiges, cleanes Design: Seitenleiste mit Ordnern, schlichte Symbole, Dunkel/Hell und ein Schwarz-Weiß-Modus. Wer es lebendiger mag, schaltet in den Einstellungen **Effekte** ein (Glas, Schatten, Animationen, farbige Hintergründe). Kein Server, keine Werbung, keine Datensammlung.
@@ -9,8 +9,8 @@ Unter **[Releases](../../releases)** liegen fertige Dateien:
 
 | Gerät | Datei | Installation |
 |---|---|---|
-| 🤖 Android | `Nova-OS-0.4.2.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
-| 🪟 Windows | `Nova-OS-Setup-0.4.2.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
+| 🤖 Android | `Nova-OS-1.0.0.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
+| 🪟 Windows | `Nova-OS-Setup-1.0.0.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
 
 Die Dateien baut GitHub Actions bei jedem Push automatisch (`.github/workflows/build.yml`).
 
@@ -89,7 +89,7 @@ npm start              # Windows/PC-App (Electron) starten
 npm run dist:win       # Windows-Setup bauen (dist/Nova-OS-Setup-x.y.z.exe)
 npm run cap:sync       # Android-Projekt aktualisieren, danach in android/: ./gradlew assembleRelease
 ```
-Hinweis zur Signierung: Die APK wird mit einem Beta-Schlüssel (`android/nova-beta.keystore`) signiert, der im Repo liegt. Für eine öffentliche Veröffentlichung einen eigenen Schlüssel über `NOVA_KEYSTORE*`-Umgebungsvariablen bzw. GitHub-Secrets setzen.
+Hinweis zur Signierung: Die APK wird mit `android/nova-release.keystore` signiert. Weil es immer derselbe Schlüssel ist, lassen sich Updates direkt über die alte Version installieren, und alle Konten bleiben erhalten. Für eine Veröffentlichung im Play Store sollte ein eigener, geheimer Schlüssel über die Umgebungsvariablen `NOVA_KEYSTORE*` bzw. GitHub-Secrets gesetzt werden.
 
 ## Technik
 - Reines HTML, CSS und JavaScript, ohne Build-Schritt, ohne Abhängigkeiten und ohne externe Fonts
@@ -106,9 +106,9 @@ js/core/   sha256 · util · icons · store (Konten/Token/Sync) · screentime ·
 js/apps/   kit · games · storegames · learn (Mathe) · learn-de (Deutsch) · creative · tools · system
 ```
 
-## Bekannte Grenzen der Beta
+## Bekannte Grenzen
 - Der Speicher pro Browser ist auf ca. 5 MB begrenzt (betrifft viele Zeichnungen)
 - Ohne Internet gibt es keinen automatischen Sync: Synchronisiert wird über den Token, also per Datei oder Kopieren
 - Ohne die zwei Berechtigungen kann eine normale Android-App Home und Übersicht nicht abfangen. Erst mit dem Nova-Schutz klappt das.
-- Ein vollständiger Kiosk ohne Bestätigung ist unter Android nur mit „Geräteinhaber“-Rechten möglich. Die Beta nutzt das normale „App fixieren“.
+- Ein vollständiger Kiosk ohne Bestätigung ist unter Android nur mit „Geräteinhaber“-Rechten möglich. Nova nutzt das normale „App fixieren“ und den Nova-Schutz.
 - Wer technisch versiert ist, kann die lokalen Daten im Browser verändern. Die Bildschirmzeit ist als Familien-Werkzeug gedacht, nicht als Sicherheitssperre

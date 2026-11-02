@@ -23,7 +23,11 @@ jobs:
         with:
           distribution: temurin
           java-version: 21
-      - uses: android-actions/setup-android@v3
+      # Das Android-SDK ist auf ubuntu-latest vorinstalliert (ANDROID_HOME)
+      - name: Android-SDK prüfen
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
       - name: Abhängigkeiten
         run: npm ci --ignore-scripts
       - name: Web-App kopieren & Capacitor sync

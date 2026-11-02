@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="de" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0b0d12">
+  <meta name="description" content="Nova OS – ein komplett internetfreies System für Kinder und Jugendliche mit Apps, Spielen, Kreativ-Tools und Bildschirmzeit.">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Nova">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="icons/icon-192.png">
+  <title>Nova OS</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body data-wp="aurora">
+  <div id="app"></div>
+  <noscript>Nova OS benötigt JavaScript.</noscript>
+
+  <!-- Kern -->
+  <script src="js/core/sha256.js"></script>
+  <script src="js/core/util.js"></script>
+  <script src="js/core/icons.js"></script>
+  <script src="js/core/store.js"></script>
+  <script src="js/core/screentime.js"></script>
+  <script src="js/core/shell.js"></script>
+  <!-- Apps -->
+  <script src="js/apps/kit.js"></script>
+  <script src="js/apps/games.js"></script>
+  <script src="js/apps/creative.js"></script>
+  <script src="js/apps/tools.js"></script>
+  <script src="js/apps/system.js"></script>
+  <!-- Start -->
+  <script src="js/main.js"></script>
+</body>
+</html>

@@ -10,6 +10,7 @@
   const FOLDERS = [
     { id: 'games', name: 'Spiele', icon: 'gamepad', grad: ['#ff5c8a', '#7c5cff'] },
     { id: 'creative', name: 'Kreativ', icon: 'sparkle', grad: ['#ff9f43', '#ff5c8a'] },
+    { id: 'learn', name: 'Lernen', icon: 'school', grad: ['#22c55e', '#0ea5e9'] },
     { id: 'tools', name: 'Werkzeuge', icon: 'tool', grad: ['#4f8cff', '#00c2a8'] },
     { id: 'system', name: 'System', icon: 'cpu', grad: ['#64748b', '#334155'] }
   ];
@@ -90,31 +91,38 @@
   function renderPin(panel, acc) {
     panel.innerHTML = '';
     let tries = 0;
-    const pp = ui.pinPad({
-      hint: 'PIN eingeben',
-      onDone: (pin, api) => {
-        if (store.checkPin(acc, pin)) { store.login(store.load(acc.id)); showHome(); }
-        else { tries++; api.error(tries >= 3 ? 'Falsche PIN. PIN vergessen? Eltern können sie zurücksetzen.' : 'Falsche PIN'); }
-      }
-    });
+    const isPw = acc.auth === 'password';
+    const fail = (api) => { tries++; const m = tries >= 3 ? (isPw ? 'Falsches Passwort.' : 'Falsche PIN.') + ' Vergessen? Eltern können es zurücksetzen.' : isPw ? 'Falsches Passwort' : 'Falsche PIN'; if (api) api.error(m); else ui.toast(m, 'err'); };
+    const ok = () => { store.login(store.load(acc.id)); showHome(); };
+    let entry;
+    if (isPw) {
+      const inp = h('input', { class: 'input', type: 'password', placeholder: 'Passwort', autocomplete: 'current-password' });
+      const go = () => { if (store.checkPin(acc, inp.value)) ok(); else { inp.value = ''; inp.classList.add('shake'); setTimeout(() => inp.classList.remove('shake'), 400); fail(); } };
+      inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') go(); });
+      entry = h('div', { class: 'stack pw-entry' }, inp, h('button', { class: 'btn primary wide', onclick: go }, 'Anmelden'));
+      setTimeout(() => inp.focus(), 60);
+    } else {
+      entry = ui.pinPad({ hint: 'PIN eingeben', onDone: (pin, api) => { if (store.checkPin(acc, pin)) ok(); else fail(api); } }).el;
+    }
     panel.append(
       h('button', { class: 'icon-btn back', onclick: () => renderProfiles(panel), html: icon('back') }),
       h('div', { class: 'pin-head' }, avatar(acc, 'xl'), h('h2', null, acc.name)),
-      pp.el,
-      h('button', { class: 'link-btn', onclick: () => forgotPin(panel, acc) }, 'PIN vergessen?')
+      entry,
+      h('button', { class: 'link-btn', onclick: () => forgotPin(panel, acc) }, isPw ? 'Passwort vergessen?' : 'PIN vergessen?')
     );
   }
 
   async function forgotPin(panel, acc) {
-    if (!acc.st.parentKey) return ui.dialog({ title: 'PIN vergessen', text: 'Für dieses Konto wurde keine Eltern-PIN eingerichtet. Ohne Eltern-PIN kann die PIN nicht zurückgesetzt werden – du kannst das Konto aber mit einem gespeicherten Token neu importieren.' });
-    const pin = await askPin('Eltern-PIN', 'Eltern können hier eine neue PIN für ' + acc.name + ' festlegen.', 8);
+    const what = acc.auth === 'password' ? 'das Passwort' : 'die PIN';
+    if (!acc.st.parentKey) return ui.dialog({ title: 'Vergessen?', text: 'Für dieses Konto wurde keine Eltern-PIN eingerichtet. Ohne Eltern-PIN kann ' + what + ' nicht zurückgesetzt werden – du kannst das Konto aber mit einem gespeicherten Token neu importieren.' });
+    const pin = await askPin('Eltern-PIN', 'Eltern können hier ' + what + ' für ' + acc.name + ' neu festlegen.', 8);
     if (pin == null) return;
     if (!Nova.st.checkParent(acc, pin)) return ui.toast('Eltern-PIN falsch', 'err');
-    const np = await askPin('Neue PIN', 'Neue 4-stellige PIN für ' + acc.name, 4);
+    const np = acc.auth === 'password' ? await askPassword('Neues Passwort', 'Mindestens 6 Zeichen', 6) : await askPin('Neue PIN', 'Neue 4-stellige PIN für ' + acc.name, 4, 4);
     if (!np) return;
     const a = store.load(acc.id);
     store.current = a; store.setPin(a, np); store.current = null;
-    ui.toast('PIN geändert');
+    ui.toast('Geändert');
     renderPin(panel, a);
   }
 
@@ -130,52 +138,66 @@
       ]
     });
   }
+  function askPassword(title, text, min = 1) {
+    const inp = h('input', { class: 'input', type: 'password', autocomplete: 'off', placeholder: 'Passwort' });
+    inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') inp.closest('.dialog').querySelector('.btn.primary').click(); });
+    return ui.dialog({
+      title, text, body: inp,
+      actions: [
+        { label: 'Abbrechen', ghost: true, value: null },
+        { label: 'OK', primary: true, onClick: () => { if (inp.value.length < min) { ui.toast('Mindestens ' + min + ' Zeichen', 'err'); return false; } return inp.value; } }
+      ]
+    });
+  }
+  /* Fragt das Konto-Passwort / die PIN ab. Die Eltern-PIN wird ebenfalls akzeptiert. */
+  async function askSecret(acc, title, text) {
+    const v = acc.auth === 'password' ? await askPassword(title, text) : await askPin(title, text, 8, 4);
+    if (v == null) return false;
+    if (store.checkPin(acc, v) || (acc.st.parentKey && Nova.st.checkParent(acc, v))) return true;
+    ui.toast(acc.auth === 'password' ? 'Falsches Passwort' : 'Falsche PIN', 'err');
+    return false;
+  }
+
+  async function logout() {
+    const acc = store.current;
+    if (acc && !(await askSecret(acc, 'Abmelden', 'Gib dein ' + (acc.auth === 'password' ? 'Passwort' : 'PIN') + ' ein, um dich abzumelden.'))) return;
+    Nova.native.setKiosk(false, true);
+    store.logout(); showLogin();
+  }
+
+  /* App verlassen – nur mit Passwort/PIN */
+  let exiting = false;
+  async function requestExit() {
+    if (exiting) return;
+    const acc = store.current;
+    if (!acc) return Nova.native.exit();
+    exiting = true;
+    try {
+      if (await askSecret(acc, 'Nova verlassen?', 'Zum Verlassen der App brauchst du dein ' + (acc.auth === 'password' ? 'Passwort' : 'PIN') + '.')) { allowUnload = true; Nova.native.exit(); }
+    } finally { exiting = false; }
+  }
+  let allowUnload = false;
+  window.addEventListener('beforeunload', (e) => {
+    if (Nova.native.platform !== 'web' || allowUnload || !store.current) return;
+    e.preventDefault(); e.returnValue = '';
+  });
 
   function renderCreate(panel) {
-    panel.innerHTML = '';
-    let color = Math.floor(Math.random() * store.COLORS.length);
-    const name = h('input', { class: 'input', placeholder: 'Dein Name', maxlength: 20 });
-    const prev = h('div', { class: 'create-prev' });
-    const updPrev = () => { prev.innerHTML = ''; prev.append(avatar({ name: name.value || '?', color }, 'xl')); };
-    name.addEventListener('input', updPrev);
-    const colors = h('div', { class: 'swatches' }, store.COLORS.map((g, i) =>
-      h('button', { class: 'swatch' + (i === color ? ' on' : ''), style: { background: `linear-gradient(135deg, ${g[0]}, ${g[1]})` }, onclick: (e) => { color = i; $$('.swatch', colors).forEach((s) => s.classList.remove('on')); e.currentTarget.classList.add('on'); updPrev(); } })
-    ));
-    updPrev();
-    panel.append(
-      h('button', { class: 'icon-btn back', onclick: () => renderProfiles(panel), html: icon('back') }),
-      h('h2', null, 'Neues Konto'),
-      prev,
-      h('label', { class: 'field' }, h('span', null, 'Name'), name),
-      h('label', { class: 'field' }, h('span', null, 'Farbe'), colors),
-      h('button', { class: 'btn primary wide', onclick: () => {
-        const n = name.value.trim();
-        if (n.length < 2) return ui.toast('Bitte einen Namen eingeben', 'err');
-        if (store.list().some((a) => a.name.toLowerCase() === n.toLowerCase())) return ui.toast('Diesen Namen gibt es schon', 'err');
-        stepPin(n);
-      } }, 'Weiter')
-    );
-    setTimeout(() => name.focus(), 50);
-
-    function stepPin(n, first) {
-      panel.innerHTML = '';
-      const pp = ui.pinPad({
-        hint: first ? 'PIN wiederholen' : 'Wähle eine 4-stellige PIN',
-        onDone: (pin, api) => {
-          if (!first) return stepPin(n, pin);
-          if (pin !== first) { api.error('PINs stimmen nicht überein'); setTimeout(() => stepPin(n), 700); return; }
-          const acc = store.create({ name: n, pin, color });
-          store.login(acc);
-          showHome();
-          setTimeout(() => welcome(acc), 400);
+    Nova.onboarding(panel, {
+      onBack: () => renderProfiles(panel),
+      onDone: (d) => {
+        const profile = { lastName: d.lastName.trim(), age: d.age, birthday: d.birthday, status: d.status, grade: d.status === 'school' ? d.grade : null, schoolType: d.status === 'school' ? d.schoolType : '', state: d.state, interests: d.interests, subjects: d.subjects };
+        const acc = store.create({ name: d.name.trim(), pin: d.secret, color: d.color, auth: d.auth, profile, internet: d.internet });
+        store.login(acc);
+        if (d.parentPin) {
+          Nova.st.setParent(acc, d.parentPin);
+          const sug = Nova.persona(acc).suggestMinutes;
+          if (d.useLimit && sug) { acc.st.limit = sug; acc.st.u = Date.now(); store.save(true); }
         }
-      });
-      panel.append(
-        h('button', { class: 'icon-btn back', onclick: () => renderCreate(panel), html: icon('back') }),
-        h('div', { class: 'pin-head' }, avatar({ name: n, color }, 'xl'), h('h2', null, n)),
-        pp.el
-      );
-    }
+        showHome();
+        setTimeout(() => welcome(acc), 400);
+      }
+    });
   }
 
   async function welcome(acc) {
@@ -332,6 +354,7 @@
     lastHome = scr;
     refreshHome();
     startTicker();
+    Nova.native.setKiosk(!!acc.settings.kiosk);
     checkLock();
   }
 
@@ -385,14 +408,15 @@
               { label: 'Konto-Token sichern', icon: 'key', onClick: tokenDialog },
               { label: 'Token importieren / Sync', icon: 'sync', onClick: () => importDialog() },
               '-',
-              { label: 'Abmelden', icon: 'logout', onClick: () => { store.logout(); showLogin(); } }
+              { label: 'Abmelden', icon: 'logout', onClick: logout },
+              { label: 'Nova verlassen', icon: 'x', onClick: requestExit }
             ]);
           } }, avatar(acc, 'sm'))
         )
       ),
       h('div', { class: 'home-inner' },
         h('div', { class: 'hello' },
-          h('h1', null, Nova.greeting() + ', ' + acc.name),
+          h('h1', null, (Nova.isBirthday(acc) ? 'Alles Gute zum Geburtstag' : Nova.greeting()) + ', ' + acc.name + (Nova.isBirthday(acc) ? ' 🎂' : '')),
           h('div', { class: 'muted' }, Nova.fmtDate())
         ),
         h('div', { class: 'search', html: icon('search') }, q),
@@ -686,7 +710,7 @@
         h('div', { class: 'muted small' }, 'Konto-ID für deine Eltern: ', h('b', { class: 'mono' }, fmtId(acc.id))),
         h('div', { class: 'row gap center' },
           h('button', { class: 'btn ghost', onclick: () => parentQuick(acc), html: icon('shield') + ' Eltern-PIN' }),
-          h('button', { class: 'btn ghost', onclick: () => { store.logout(); showLogin(); }, html: icon('logout') + ' Abmelden' })
+          h('button', { class: 'btn ghost', onclick: logout, html: icon('logout') + ' Abmelden' })
         )
       )
     );
@@ -713,5 +737,30 @@
     hideLock(); refreshHome(); checkLock();
   }
 
-  Nova.shell = { showLogin, showHome, refreshHome, launch, closeWin, tokenDialog, importDialog, remoteDialog, applyTheme, askPin, avatar, appIcon, seg, fmtId, checkLock, hideLock, updatePill, APPS, FOLDERS, WALLPAPERS, ACCENTS };
+  /* ---- Android-Zurück-Taste, externe Spiele, Fortsetzen ---- */
+  function handleBack() {
+    if ($('.dialog-wrap') || $('.ctx-menu') || (currentWin && !lockEl) || sheetEl) {
+      if ($('.ctx-menu')) { $$('.ctx-menu').forEach((m) => m.remove()); return; }
+      document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+      return;
+    }
+    requestExit();
+  }
+  let externalAt = 0;
+  function markExternal() { externalAt = Date.now(); store.save(true); }
+  function onResume() {
+    const acc = store.current;
+    if (acc && externalAt) {
+      const sec = Math.min(6 * 3600, Math.round((Date.now() - externalAt) / 1000));
+      const d = Nova.dayKey();
+      acc.st.usage[d] = (acc.st.usage[d] || 0) + sec;
+      externalAt = 0;
+      store.save(true);
+      if (sec > 30) ui.toast('Spielzeit ' + Nova.fmtDur(sec, true) + ' zur Bildschirmzeit gezählt');
+    }
+    if (acc && acc.settings.kiosk) Nova.native.restoreKiosk();
+    updatePill(); checkLock();
+  }
+
+  Nova.shell = { handleBack, markExternal, onResume, logout, requestExit, askSecret, askPassword, showLogin, showHome, refreshHome, launch, closeWin, tokenDialog, importDialog, remoteDialog, applyTheme, askPin, avatar, appIcon, seg, fmtId, checkLock, hideLock, updatePill, APPS, FOLDERS, WALLPAPERS, ACCENTS };
 })();

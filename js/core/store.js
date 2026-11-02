@@ -30,7 +30,9 @@
 
   const hashPin = (salt, pin) => C.sha256hex('nova-pin:' + salt + ':' + pin);
 
-  function newAccount({ name, pin, color }) {
+  const DEFAULT_PROFILE = { lastName: '', age: 12, birthday: '', status: 'school', grade: null, schoolType: '', state: '', interests: [], subjects: [] };
+
+  function newAccount({ name, pin, color, auth, profile, internet }) {
     const salt = Nova.randB32(12);
     const now = Date.now();
     return {
@@ -40,10 +42,13 @@
       color: color || 0,
       salt,
       pin: hashPin(salt, pin),
+      auth: auth === 'password' ? 'password' : 'pin',
+      profile: Object.assign({}, DEFAULT_PROFILE, profile || {}),
+      internet: internet === 'store' ? 'store' : 'offline',
       created: now,
       updated: now,
       lastBackup: 0,
-      settings: { theme: 'dark', accent: '#7c5cff', wallpaper: 'aurora', sound: true, u: now },
+      settings: { theme: 'dark', accent: '#7c5cff', wallpaper: 'aurora', sound: true, kiosk: false, simple: null, u: now },
       folders: [],
       dock: ['calc', 'todo', 'draw', 'runner'],
       recent: [],
@@ -62,6 +67,9 @@
     if (!Array.isArray(a.folders)) a.folders = [];
     if (!Array.isArray(a.dock)) a.dock = d.dock;
     if (!Array.isArray(a.recent)) a.recent = [];
+    a.profile = Object.assign({}, DEFAULT_PROFILE, a.profile || {});
+    if (!a.auth) a.auth = 'pin';
+    if (!a.internet) a.internet = 'offline';
     return a;
   }
 

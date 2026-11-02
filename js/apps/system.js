@@ -31,8 +31,28 @@
         wrap.append(
           h('div', { class: 'profile-head card' },
             shell().avatar(acc, 'xl'),
-            h('div', { class: 'grow' }, h('h2', null, acc.name), h('div', { class: 'muted small' }, 'Konto-ID ', h('b', { class: 'mono' }, shell().fmtId(acc.id))), h('div', { class: 'muted xs' }, 'Erstellt am ' + new Date(acc.created).toLocaleDateString('de-DE'))),
+            h('div', { class: 'grow' }, h('h2', null, (acc.name + ' ' + (acc.profile.lastName || '')).trim()), h('div', { class: 'muted small' }, acc.profile.age + ' Jahre' + (acc.profile.grade ? ' · Klasse ' + acc.profile.grade : '') + (acc.profile.state ? ' · ' + acc.profile.state : '')), h('div', { class: 'muted small' }, 'Konto-ID ', h('b', { class: 'mono' }, shell().fmtId(acc.id))), h('div', { class: 'muted xs' }, 'Erstellt am ' + new Date(acc.created).toLocaleDateString('de-DE'))),
             h('button', { class: 'btn sm', onclick: async () => { const n = await ui.prompt('Name ändern', { value: acc.name }); if (n && n.length >= 2) { acc.name = n.slice(0, 20); store.save(true); render(); } } }, 'Name ändern')
+          ),
+          group('Profil & Lernen',
+            row('Alter', 'Bestimmt, wie Nova dir Dinge erklärt', h('div', { class: 'row gap' },
+              h('button', { class: 'icon-btn sm', onclick: () => setAge(acc.profile.age - 1), html: '−' }),
+              h('b', { class: 'mono age-small' }, acc.profile.age),
+              h('button', { class: 'icon-btn sm', onclick: () => setAge(acc.profile.age + 1), html: '+' }))),
+            row('Klassenstufe', acc.profile.schoolType || null, (() => { const sel = h('select', { class: 'input sel-sm', onchange: (e) => { acc.profile.grade = e.target.value ? +e.target.value : null; acc.profile.status = e.target.value ? 'school' : acc.profile.status; store.save(true); render(); } },
+              h('option', { value: '' }, 'Keine / automatisch'), Array.from({ length: 13 }, (_, i) => h('option', { value: i + 1, selected: acc.profile.grade === i + 1 }, 'Klasse ' + (i + 1)))); return sel; })()),
+            row('Erklär-Stil', 'Automatisch: ' + Nova.LEVELS[Nova.persona(Object.assign({}, acc, { settings: Object.assign({}, acc.settings, { simple: null }) })).level].name, shell().seg([['Auto', 0], ['1', 1], ['2', 2], ['3', 3], ['4', 4], ['5', 5]], acc.settings.simple || 0, (v) => { acc.settings.simple = v || null; saveSettings(); render(); }))
+          ),
+          group('Internet & Schutz',
+            row('Internet-Modus', acc.internet === 'store' ? 'Echte Spiele dürfen einmalig aus dem Play Store installiert werden' : 'Nova nutzt nie das Internet', shell().seg([['Internetfrei', 'offline'], ['Einmalige Installation', 'store']], acc.internet, async (v) => { await Nova.setInternetMode(acc, v); render(); })),
+            row(Nova.native.isAndroid ? 'App fixieren (Kiosk)' : 'Vollbild-Kiosk', Nova.native.isAndroid ? 'Andere Apps & Home-Taste sind gesperrt, bis man Nova mit Passwort verlässt' : Nova.native.isElectron ? 'Nova läuft im Vollbild ohne Fensterleiste' : 'Nur in der installierten PC-/Android-App', h('input', { type: 'checkbox', class: 'switch', checked: !!acc.settings.kiosk, disabled: Nova.native.platform === 'web', onchange: async (e) => {
+              const want = e.target.checked; e.target.checked = !want;
+              const ok = Nova.st.hasParent(acc) ? await (async () => { const p = await shell().askPin('Eltern-PIN', 'Kiosk-Modus ändern'); return p != null && Nova.st.checkParent(acc, p); })() : await shell().askSecret(acc, 'Bestätigen', 'Kiosk-Modus ändern');
+              if (!ok) return;
+              acc.settings.kiosk = want; saveSettings(); Nova.native.setKiosk(want); render();
+            } })),
+            Nova.native.isAndroid ? row('Nova als Startbildschirm', 'Beim Drücken der Home-Taste öffnet sich Nova', h('button', { class: 'btn sm', onclick: () => Nova.native.openHomeSettings() }, 'Einstellen')) : null,
+            row('Verlassen-Schutz', 'Abmelden und Beenden nur mit deinem ' + (acc.auth === 'password' ? 'Passwort' : 'PIN'), h('span', { class: 'tag ok' }, 'aktiv'))
           ),
           group('Aussehen',
             row('Design', null, shell().seg([['Dunkel', 'dark'], ['Hell', 'light'], ['Auto', 'auto']], acc.settings.theme, (v) => { acc.settings.theme = v; saveSettings(); })),
@@ -42,7 +62,7 @@
           ),
           group('Allgemein',
             row('Töne & Effekte', 'Sounds in Spielen und Apps', h('input', { type: 'checkbox', class: 'switch', checked: acc.settings.sound !== false, onchange: (e) => { acc.settings.sound = e.target.checked; saveSettings(); } })),
-            row('PIN ändern', 'Deine 4-stellige Anmelde-PIN', h('button', { class: 'btn sm', onclick: changePin }, 'Ändern'))
+            row('PIN / Passwort ändern', 'Aktuell: ' + (acc.auth === 'password' ? 'Passwort' : 'PIN'), h('button', { class: 'btn sm', onclick: changePin }, 'Ändern'))
           ),
           group('Konto-Token & Sync',
             row('Konto-Token sichern', acc.lastBackup ? 'Zuletzt gesichert: ' + Nova.relTime(acc.lastBackup) : 'Noch nie gesichert – bitte jetzt sichern!', h('button', { class: 'btn sm primary', onclick: shell().tokenDialog, html: icon('key') + ' Sichern' })),
@@ -57,23 +77,27 @@
           group('Gefahrenzone',
             row('Konto von diesem Gerät löschen', 'Sichere vorher deinen Token, sonst ist alles weg', h('button', { class: 'btn sm danger', onclick: deleteAccount }, 'Löschen'))
           ),
-          h('div', { class: 'muted xs center about' }, 'Nova OS · Beta 0.1 · 100 % offline · Keine Werbung · Keine Datensammlung')
+          h('div', { class: 'muted xs center about' }, 'Nova OS · Beta 0.2 · ' + ({ web: 'Web', electron: 'Windows/PC', android: 'Android' })[Nova.native.platform] + ' · 100 % offline · Keine Werbung · Keine Datensammlung')
         );
       };
+      function setAge(a) {
+        acc.profile.age = Nova.clamp(a, 0, 100); acc.profile.birthday = ''; store.save(true); render();
+      }
       async function changePin() {
-        const old = await shell().askPin('Aktuelle PIN', null, 4, 4); if (old == null) return;
-        if (!store.checkPin(acc, old)) return ui.toast('PIN falsch', 'err');
-        const p1 = await shell().askPin('Neue PIN', '4 Ziffern', 4, 4); if (!p1) return;
-        const p2 = await shell().askPin('Neue PIN wiederholen', null, 4, 4); if (p1 !== p2) return ui.toast('PINs stimmen nicht überein', 'err');
-        store.setPin(acc, p1); ui.toast('PIN geändert');
+        if (!(await shell().askSecret(acc, 'Aktuelles ' + (acc.auth === 'password' ? 'Passwort' : 'PIN'), null))) return;
+        const type = await ui.dialog({ title: 'Neue Anmeldung', text: 'Was möchtest du verwenden?', actions: [{ label: 'Abbrechen', ghost: true, value: null }, { label: 'PIN (4 Ziffern)', value: 'pin' }, { label: 'Passwort', primary: true, value: 'password' }] });
+        if (!type) return;
+        const ask = (t) => type === 'pin' ? shell().askPin(t, '4 Ziffern', 4, 4) : shell().askPassword(t, 'Mindestens 6 Zeichen', 6);
+        const p1 = await ask('Neu'); if (!p1) return;
+        const p2 = await ask('Wiederholen'); if (p1 !== p2) return ui.toast('Stimmt nicht überein', 'err');
+        acc.auth = type; store.setPin(acc, p1); ui.toast('Geändert'); render();
       }
       async function deleteAccount() {
         if (Nova.st.hasParent(acc)) {
           const pp = await shell().askPin('Eltern-PIN', 'Zum Löschen ist die Eltern-PIN nötig.'); if (pp == null) return;
           if (!Nova.st.checkParent(acc, pp)) return ui.toast('Eltern-PIN falsch', 'err');
         } else {
-          const p = await shell().askPin('PIN bestätigen', null, 4, 4); if (p == null) return;
-          if (!store.checkPin(acc, p)) return ui.toast('PIN falsch', 'err');
+          if (!(await shell().askSecret(acc, 'Bestätigen', null))) return;
         }
         if (!(await ui.confirm('Konto wirklich löschen?', 'Alle Daten von ' + acc.name + ' werden von diesem Gerät entfernt. Mit einem gespeicherten Token kannst du es wiederherstellen.', { label: 'Endgültig löschen', danger: true }))) return;
         const id = acc.id;

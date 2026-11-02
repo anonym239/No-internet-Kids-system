@@ -1,11 +1,11 @@
 /* Nova OS – Service Worker: macht die App komplett offline-fähig */
-const VERSION = 'nova-beta-0.1.0';
+const VERSION = 'nova-beta-0.2.0';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png',
   './js/core/sha256.js', './js/core/util.js', './js/core/icons.js', './js/core/store.js',
-  './js/core/screentime.js', './js/core/shell.js',
-  './js/apps/kit.js', './js/apps/games.js', './js/apps/creative.js', './js/apps/tools.js', './js/apps/system.js',
+  './js/core/screentime.js', './js/core/persona.js', './js/core/native.js', './js/core/shell.js', './js/core/onboarding.js',
+  './js/apps/kit.js', './js/apps/games.js', './js/apps/storegames.js', './js/apps/learn.js', './js/apps/learn-de.js', './js/apps/creative.js', './js/apps/tools.js', './js/apps/system.js',
   './js/main.js'
 ];
 

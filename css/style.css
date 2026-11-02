@@ -804,3 +804,9 @@ select.input option { background: var(--solid); color: var(--text); }
   .age-num { font-size: 56px; }
 }
 @media (hover: none) { .tile:hover, .folder-card:hover, .topic:hover { transform: none; } }
+
+/* Schlanke Scrollleisten (PC) */
+* { scrollbar-width: thin; scrollbar-color: var(--surface-3) transparent; }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 10px; border: 3px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-track { background: transparent; }

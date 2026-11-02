@@ -160,7 +160,7 @@
 
   async function logout() {
     const acc = store.current;
-    if (acc && !(await askSecret(acc, 'Abmelden', 'Gib dein ' + (acc.auth === 'password' ? 'Passwort' : 'PIN') + ' ein, um dich abzumelden.'))) return;
+    if (acc && !(await askSecret(acc, 'Abmelden', 'Gib ' + (acc.auth === 'password' ? 'dein Passwort' : 'deine PIN') + ' ein, um dich abzumelden.'))) return;
     Nova.native.setKiosk(false, true);
     store.logout(); showLogin();
   }
@@ -173,7 +173,7 @@
     if (!acc) return Nova.native.exit();
     exiting = true;
     try {
-      if (await askSecret(acc, 'Nova verlassen?', 'Zum Verlassen der App brauchst du dein ' + (acc.auth === 'password' ? 'Passwort' : 'PIN') + '.')) { allowUnload = true; Nova.native.exit(); }
+      if (await askSecret(acc, 'Nova verlassen?', 'Zum Verlassen der App brauchst du ' + (acc.auth === 'password' ? 'dein Passwort' : 'deine PIN') + '.')) { allowUnload = true; Nova.native.exit(); }
     } finally { exiting = false; }
   }
   let allowUnload = false;

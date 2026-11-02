@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Nova OS</string>
+    <string name="title_activity_main">Nova OS</string>
+    <string name="package_name">com.novaos.kids</string>
+    <string name="custom_url_scheme">com.novaos.kids</string>
+</resources>

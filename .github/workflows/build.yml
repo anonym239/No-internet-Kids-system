@@ -1,0 +1,96 @@
+name: Build APK & Windows-Setup
+
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  android:
+    name: Android APK
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - uses: android-actions/setup-android@v3
+      - name: Abhängigkeiten
+        run: npm ci --ignore-scripts
+      - name: Web-App kopieren & Capacitor sync
+        run: |
+          node scripts/build-web.js
+          npx cap sync android
+      - name: APK bauen (signiert)
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
+      - name: APK umbenennen
+        run: |
+          VERSION=$(node -p "require('./package.json').version")
+          mkdir -p out
+          cp android/app/build/outputs/apk/release/app-release.apk "out/Nova-OS-${VERSION}.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nova-android
+          path: out/*.apk
+
+  windows:
+    name: Windows Setup (.exe)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Abhängigkeiten
+        run: npm ci
+      - name: Setup bauen
+        run: npm run dist:win
+        env:
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: nova-windows
+          path: dist/*.exe
+
+  release:
+    name: GitHub-Release veröffentlichen
+    needs: [android, windows]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: files
+          merge-multiple: true
+      - name: Version
+        id: v
+        run: echo "version=$(node -p "require('./package.json').version")" >> "$GITHUB_OUTPUT"
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ steps.v.outputs.version }}-beta
+          target_commitish: ${{ github.sha }}
+          name: Nova OS ${{ steps.v.outputs.version }} Beta
+          prerelease: true
+          make_latest: true
+          files: files/*
+          body: |
+            ## Nova OS ${{ steps.v.outputs.version }} – Beta
+
+            **Sofort loslegen:**
+            - 🤖 **Android:** `Nova-OS-${{ steps.v.outputs.version }}.apk` herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben.
+            - 🪟 **Windows:** `Nova-OS-Setup-${{ steps.v.outputs.version }}.exe` herunterladen und ausführen. Das Setup legt ein Desktop- und Startmenü-Symbol an. Falls Windows SmartScreen warnt: „Weitere Informationen“ → „Trotzdem ausführen“ (das Setup ist nicht kostenpflichtig signiert).
+
+            Nova läuft danach komplett ohne Internet.

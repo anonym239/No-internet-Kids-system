@@ -1,0 +1,9 @@
+{
+  "appId": "com.novaos.kids",
+  "appName": "Nova OS",
+  "webDir": "www",
+  "android": {
+    "backgroundColor": "#0b0d12",
+    "allowMixedContent": false
+  }
+}

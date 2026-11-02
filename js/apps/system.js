@@ -52,7 +52,7 @@
               acc.settings.kiosk = want; saveSettings(); Nova.native.setKiosk(want); render();
             } })),
             Nova.native.isAndroid ? row('Nova als Startbildschirm', 'Beim Drücken der Home-Taste öffnet sich Nova', h('button', { class: 'btn sm', onclick: () => Nova.native.openHomeSettings() }, 'Einstellen')) : null,
-            row('Verlassen-Schutz', 'Abmelden und Beenden nur mit deinem ' + (acc.auth === 'password' ? 'Passwort' : 'PIN'), h('span', { class: 'tag ok' }, 'aktiv'))
+            row('Verlassen-Schutz', 'Abmelden und Beenden nur mit ' + (acc.auth === 'password' ? 'deinem Passwort' : 'deiner PIN'), h('span', { class: 'tag ok' }, 'aktiv'))
           ),
           group('Aussehen',
             row('Design', null, shell().seg([['Dunkel', 'dark'], ['Hell', 'light'], ['Auto', 'auto']], acc.settings.theme, (v) => { acc.settings.theme = v; saveSettings(); })),

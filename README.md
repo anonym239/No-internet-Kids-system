@@ -1,9 +1,20 @@
-# Nova OS – Beta 0.1
+# Nova OS – Beta 0.2
 
 **Ein komplett internetfreies System für Kinder und Jugendliche (ca. 10–14 Jahre) – für PC und Handy.**
 Modern, clean und übersichtlich. Kein Server, keine Werbung, keine Datensammlung.
 
-## Starten
+## Download (sofort loslegen)
+
+Unter **[Releases](../../releases)** liegen fertige Dateien:
+
+| Gerät | Datei | Installation |
+|---|---|---|
+| 🤖 Android | `Nova-OS-0.2.0.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
+| 🪟 Windows | `Nova-OS-Setup-0.2.0.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
+
+Die Dateien baut GitHub Actions bei jedem Push automatisch (`.github/workflows/build.yml`).
+
+## Starten ohne Installation
 
 | Weg | So geht's |
 |---|---|
@@ -13,7 +24,12 @@ Modern, clean und übersichtlich. Kein Server, keine Werbung, keine Datensammlun
 ## Funktionen
 
 ### Konten & Anmeldung
-- Mehrere Konten pro Gerät, jedes mit einer eigenen 4-stelligen PIN
+- **Ausführliche Einrichtung in 8 Schritten:** Vor- und Nachname, **Alter 0–100** (oder Geburtstag, dann wird das Alter genau berechnet), Kita/Schule/Ausbildung/Beruf, Klassenstufe, Schulform, Bundesland, Interessen, Lieblingsfächer, Profilfarbe, Internet-Modus sowie **PIN oder Passwort**. Bei Kindern unter 16 kann direkt eine Eltern-PIN mit einem altersgerechten Tageslimit eingerichtet werden.
+- **Nova erkennt das Alter:** Daraus ergibt sich einer von 5 Erklär-Stilen, von „Ganz einfach“ (kurze Sätze, Äpfel und Bonbons) bis „Sachlich“ (Lehrbuch-Stil). Alle Erklärungen in Mathe und Deutsch passen sich daran an. In den Einstellungen lässt sich der Stil ändern.
+- **Verlassen-Schutz:** Abmelden und das Beenden der App gehen nur mit dem Passwort bzw. der PIN des Kontos (oder der Eltern-PIN).
+  - Windows: Klick auf X und Alt+F4 werden abgefangen. Optional gibt es einen Vollbild-Kiosk.
+  - Android: Die Zurück-Taste wird abgefangen. Optional lässt sich die App fixieren (Lock Task) und Nova als Startbildschirm festlegen.
+- Mehrere Konten pro Gerät
 - **Konto-Token**: Das komplette Konto steckt in einem Token (Text oder `.novakey`-Datei, komprimiert und mit Prüfsumme)
   - Mit dem Token stellst du dein Konto **jederzeit** wieder her: nach dem Deinstallieren, auf einem neuen Gerät oder nach dem Löschen der App-Daten
   - **Sync ohne Internet:** Gibt es das Konto auf einem Gerät schon, werden beim Import beide Stände zusammengeführt (Aufgaben, Notizen, Bilder, Highscores, Ordner …)
@@ -24,6 +40,16 @@ Modern, clean und übersichtlich. Kein Server, keine Werbung, keine Datensammlun
 - Eigene Ordner erstellen, umbenennen, löschen und mit Apps füllen
 - Dock mit Lieblings-Apps (lange drücken / Rechtsklick auf eine App)
 - Suche, „Zuletzt verwendet“
+
+### Lernen (wie ein Lern-Trainer, für die Schule in Deutschland)
+- **Mathe:** 19 Themen von Klasse 1 bis 11, von „Plus bis 20“ über Einmaleins, Brüche, Prozent und Gleichungen bis zu Pythagoras und der pq-Formel
+- **Deutsch:** 15 Themen von Klasse 1 bis 9: der/die/das, Silben, Groß- und Kleinschreibung, Plural, Wortarten, s/ss/ß, das/dass, Zeitformen, Satzglieder, die vier Fälle, Kommas, Rechtschreibung, Synonyme
+- Die Aufgaben werden immer neu erzeugt. Dazu gibt es Sterne, XP, eine Lern-Serie (Tage) und eine Erklärung zu jeder Aufgabe.
+
+### Echte Spiele (optional, „einmalige Installation“)
+Hat man bei der Einrichtung *Mit einmaliger Installation* gewählt, kann man in der Android-App **Subway Surfers, Geometry Dash (Lite), Temple Run 2, Hill Climb Racing, Jetpack Joyride, Fruit Ninja, Crossy Road und Minecraft** einmalig aus dem Play Store installieren. Danach startet Nova sie direkt, und sie laufen ohne Internet. Die Spielzeit wird zur Bildschirmzeit gezählt.
+Bei *Komplett internetfrei* ist das gesperrt. Umschalten lässt es sich nur mit Eltern-PIN bzw. Passwort.
+> Android erlaubt keine stille Installation: Der Play Store öffnet sich, dort tippt man einmal auf „Installieren“.
 
 ### Apps
 | Spiele | Kreativ | Werkzeuge | System |
@@ -47,6 +73,15 @@ Alle Spiele sind eigene Spiele im Stil bekannter Genres und funktionieren komple
   4. Sie erhalten einen 9-stelligen Code (z. B. `035-RNH-21Q`), den das Kind eintippt
 - Codes sind mit HMAC-SHA256 signiert, gelten nur am Erstellungstag und nur **einmal**
 
+## Selbst bauen
+```bash
+npm install
+npm start              # Windows/PC-App (Electron) starten
+npm run dist:win       # Windows-Setup bauen (dist/Nova-OS-Setup-x.y.z.exe)
+npm run cap:sync       # Android-Projekt aktualisieren, danach in android/: ./gradlew assembleRelease
+```
+Hinweis zur Signierung: Die APK wird mit einem Beta-Schlüssel (`android/nova-beta.keystore`) signiert, der im Repo liegt. Für eine öffentliche Veröffentlichung einen eigenen Schlüssel über `NOVA_KEYSTORE*`-Umgebungsvariablen bzw. GitHub-Secrets setzen.
+
 ## Technik
 - Reines HTML, CSS und JavaScript, ohne Build-Schritt, ohne Abhängigkeiten und ohne externe Fonts
 - Daten liegen lokal (`localStorage`), Token-Kompression über `CompressionStream`
@@ -55,12 +90,16 @@ Alle Spiele sind eigene Spiele im Stil bekannter Genres und funktionieren komple
 
 ```
 index.html
+electron/  Windows-Hülle (Schließen-Schutz, Kiosk, blockiert jedes Netzwerk)
+android/   Android-Projekt (Capacitor; ohne INTERNET-Berechtigung; NovaKiosk-Plugin)
 css/style.css
-js/core/   sha256 · util · icons · store (Konten/Token/Sync) · screentime · shell (UI)
-js/apps/   kit · games · creative · tools · system
+js/core/   sha256 · util · icons · store (Konten/Token/Sync) · screentime · persona (Alter) · native · shell (UI) · onboarding
+js/apps/   kit · games · storegames · learn (Mathe) · learn-de (Deutsch) · creative · tools · system
 ```
 
 ## Bekannte Grenzen der Beta
 - Der Speicher pro Browser ist auf ca. 5 MB begrenzt (betrifft viele Zeichnungen)
 - Ohne Internet gibt es keinen automatischen Sync: Synchronisiert wird über den Token, also per Datei oder Kopieren
+- Die Spielzeit in echten Spielen zählt erst, wenn man zu Nova zurückkehrt. Während des Spiels kann Nova nicht unterbrechen.
+- Ein vollständiger Kiosk ohne Bestätigung ist unter Android nur mit „Geräteinhaber“-Rechten möglich. Die Beta nutzt das normale „App fixieren“.
 - Wer technisch versiert ist, kann die lokalen Daten im Browser verändern. Die Bildschirmzeit ist als Familien-Werkzeug gedacht, nicht als Sicherheitssperre

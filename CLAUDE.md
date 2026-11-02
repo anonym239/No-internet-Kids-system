@@ -6,7 +6,8 @@ Diese Datei liest jede neue Claude-Sitzung in diesem Repo automatisch. Sie enth�
 1. **Immer selbst committen und pushen.** Der Inhaber möchte nichts selbst tun müssen. Nach jeder Änderung testen, committen und auf den vorgegebenen Branch pushen.
 2. **Immer über GitHub Actions bauen.** APK (Android) und Windows-Setup (.exe) werden ausschließlich von `.github/workflows/build.yml` gebaut und als GitHub-Release veröffentlicht. Nach dem Push den Workflow-Lauf prüfen und Fehler selbst beheben, bis der Lauf grün ist.
    - Lokal gibt es kein Android-SDK (`dl.google.com` ist gesperrt). Nichts lokal bauen wollen, sondern CI nutzen.
-   - Bei jeder neuen Version `version` in `package.json`, `versionCode`/`versionName` in `android/app/build.gradle` und `VERSION` in `sw.js` erhöhen. Der Release-Tag lautet dann `v<version>-beta`.
+   - Bei jeder neuen Version `version` in `package.json`, `versionCode`/`versionName` in `android/app/build.gradle` und `VERSION` in `sw.js` erhöhen.
+   - **Immer richtige Releases, keine Vorabversionen:** Der Workflow erstellt ein vollständiges GitHub-Release `v<version>` (prerelease: false, „Latest“) mit APK und Setup.exe als Anhang. Der Release-Text kommt aus der Commit-Nachricht: Titelzeile plus Stichpunkte, also aussagekräftig auf Deutsch schreiben.
 3. **Sprache:** Alles auf Deutsch (UI, Texte, Commits, Antworten).
 4. **Design: clean, ruhig, übersichtlich, nicht kindisch.**
    - Flache Flächen, feine 1-px-Linien, neutrale Akzentfarbe (Standard: Schwarz/Weiß), viel Weißraum

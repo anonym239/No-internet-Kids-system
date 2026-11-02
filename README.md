@@ -1,4 +1,4 @@
-# Nova OS – Beta 0.4
+# Nova OS 0.4
 
 **Ein komplett internetfreies System für Kinder und Jugendliche – für PC und Handy.**
 Ruhiges, cleanes Design: Seitenleiste mit Ordnern, schlichte Symbole, Dunkel/Hell und ein Schwarz-Weiß-Modus. Wer es lebendiger mag, schaltet in den Einstellungen **Effekte** ein (Glas, Schatten, Animationen, farbige Hintergründe). Kein Server, keine Werbung, keine Datensammlung.
@@ -9,8 +9,8 @@ Unter **[Releases](../../releases)** liegen fertige Dateien:
 
 | Gerät | Datei | Installation |
 |---|---|---|
-| 🤖 Android | `Nova-OS-0.4.1.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
-| 🪟 Windows | `Nova-OS-Setup-0.4.1.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
+| 🤖 Android | `Nova-OS-0.4.2.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
+| 🪟 Windows | `Nova-OS-Setup-0.4.2.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
 
 Die Dateien baut GitHub Actions bei jedem Push automatisch (`.github/workflows/build.yml`).
 

@@ -26,7 +26,7 @@
         const wp = h('div', { class: 'wp-grid' }, Object.entries(shell().WALLPAPERS).map(([k, name]) =>
           h('button', { class: 'wp' + (acc.settings.wallpaper === k ? ' on' : ''), 'data-wp': k, onclick: () => { acc.settings.wallpaper = k; saveSettings(); render(); } }, h('span', null, name))));
         const accents = h('div', { class: 'swatches' }, shell().ACCENTS.map((c) =>
-          h('button', { class: 'swatch' + (acc.settings.accent === c ? ' on' : ''), style: { background: c }, onclick: () => { acc.settings.accent = c; saveSettings(); render(); } })));
+          h('button', { class: 'swatch' + (acc.settings.accent === c || (c === 'auto' && !acc.settings.accent) ? ' on' : '') + (c === 'auto' ? ' auto' : ''), title: c === 'auto' ? 'Neutral' : c, style: { background: c === 'auto' ? '' : c }, onclick: () => { acc.settings.accent = c; saveSettings(); render(); } })));
         const used = (() => { let n = 0; try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); n += k.length + (localStorage.getItem(k) || '').length; } } catch (e) {} return n * 2; })();
         wrap.append(
           h('div', { class: 'profile-head card' },
@@ -55,9 +55,11 @@
             row('Verlassen-Schutz', 'Abmelden und Beenden nur mit ' + (acc.auth === 'password' ? 'deinem Passwort' : 'deiner PIN'), h('span', { class: 'tag ok' }, 'aktiv'))
           ),
           group('Aussehen',
-            row('Design', null, shell().seg([['Dunkel', 'dark'], ['Hell', 'light'], ['Auto', 'auto']], acc.settings.theme, (v) => { acc.settings.theme = v; saveSettings(); })),
-            row('Akzentfarbe', null, accents),
-            h('div', { class: 'set-row col' }, h('div', null, 'Hintergrund'), wp),
+            row('Design', null, shell().seg([['Dunkel', 'dark'], ['Hell', 'light'], ['System', 'auto']], acc.settings.theme, (v) => { acc.settings.theme = v; saveSettings(); })),
+            row('Schwarz-Weiß', 'Alles in Graustufen – ohne Farben', h('input', { type: 'checkbox', class: 'switch', checked: !!acc.settings.bw, onchange: (e) => { acc.settings.bw = e.target.checked; saveSettings(); render(); } })),
+            acc.settings.bw ? null : row('App-Symbole', null, shell().seg([['Schlicht', 'mono'], ['Dezent', 'tint'], ['Bunt', 'color']], acc.settings.icons || 'mono', (v) => { acc.settings.icons = v; saveSettings(); })),
+            acc.settings.bw ? null : row('Akzentfarbe', null, accents),
+            acc.settings.bw ? null : h('div', { class: 'set-row col' }, h('div', null, 'Hintergrund'), wp),
             row('Profilfarbe', null, h('div', { class: 'swatches' }, store.COLORS.map((gr, i) => h('button', { class: 'swatch' + (acc.color === i ? ' on' : ''), style: { background: `linear-gradient(135deg, ${gr[0]}, ${gr[1]})` }, onclick: () => { acc.color = i; store.save(true); render(); } }))))
           ),
           group('Allgemein',
@@ -77,7 +79,7 @@
           group('Gefahrenzone',
             row('Konto von diesem Gerät löschen', 'Sichere vorher deinen Token, sonst ist alles weg', h('button', { class: 'btn sm danger', onclick: deleteAccount }, 'Löschen'))
           ),
-          h('div', { class: 'muted xs center about' }, 'Nova OS · Beta 0.2 · ' + ({ web: 'Web', electron: 'Windows/PC', android: 'Android' })[Nova.native.platform] + ' · 100 % offline · Keine Werbung · Keine Datensammlung')
+          h('div', { class: 'muted xs center about' }, 'Nova OS · Beta 0.3 · ' + ({ web: 'Web', electron: 'Windows/PC', android: 'Android' })[Nova.native.platform] + ' · 100 % offline · Keine Werbung · Keine Datensammlung')
         );
       };
       function setAge(a) {

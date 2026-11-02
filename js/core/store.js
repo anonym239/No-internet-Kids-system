@@ -48,9 +48,9 @@
       created: now,
       updated: now,
       lastBackup: 0,
-      settings: { theme: 'dark', accent: '#7c5cff', wallpaper: 'aurora', sound: true, kiosk: false, simple: null, u: now },
+      settings: { theme: 'dark', accent: 'auto', wallpaper: 'mono', icons: 'mono', bw: false, v3: true, sound: true, kiosk: false, simple: null, u: now },
       folders: [],
-      dock: ['calc', 'todo', 'draw', 'runner'],
+      dock: ['mathe', 'deutsch', 'todo', 'notes', 'calc', 'runner'],
       recent: [],
       data: { todos: [], notes: [], drawings: [], pixels: [], beats: [], decks: [], calc: [], scores: {} },
       st: { limit: 0, bedtime: { on: false, from: '21:00', to: '07:00' }, usage: {}, bonus: {}, locked: {}, unlocked: {}, parentKey: null, usedCodes: [], u: now }
@@ -70,6 +70,7 @@
     a.profile = Object.assign({}, DEFAULT_PROFILE, a.profile || {});
     if (!a.auth) a.auth = 'pin';
     if (!a.internet) a.internet = 'offline';
+    if (!a.settings.v3) Object.assign(a.settings, { accent: 'auto', wallpaper: 'mono', icons: 'mono', bw: false, v3: true });
     return a;
   }
 

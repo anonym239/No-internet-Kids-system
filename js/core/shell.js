@@ -14,36 +14,41 @@
     { id: 'tools', name: 'Werkzeuge', icon: 'tool', grad: ['#4f8cff', '#00c2a8'] },
     { id: 'system', name: 'System', icon: 'cpu', grad: ['#64748b', '#334155'] }
   ];
-  const USER_GRADS = [['#7c5cff', '#4f8cff'], ['#00c2a8', '#2ecc71'], ['#ff6b3d', '#ffb800'], ['#ec4899', '#a855f7'], ['#0ea5e9', '#6366f1']];
-  Nova.registerApp = (def) => APPS.push(def);
+    Nova.registerApp = (def) => APPS.push(def);
   const app = (id) => APPS.find((a) => a.id === id);
 
   const WALLPAPERS = {
-    aurora: 'Aurora', ocean: 'Ozean', sunset: 'Sonnenuntergang', forest: 'Wald', graphite: 'Graphit', mono: 'Schlicht'
+    mono: 'Schlicht', graphite: 'Graphit', aurora: 'Aurora', ocean: 'Ozean', sunset: 'Abendrot', forest: 'Wald'
   };
-  const ACCENTS = ['#7c5cff', '#4f8cff', '#00c2a8', '#2ecc71', '#ffb800', '#ff6b3d', '#ff5c8a', '#a855f7'];
+  const ACCENTS = ['auto', '#3b82f6', '#6d5dfc', '#0d9488', '#16a34a', '#d97706', '#dc2626', '#db2777'];
 
   const root = () => $('#app');
   let ticker = null, lockEl = null, currentWin = null, tickCount = 0, warned = {};
 
   /* ================= Theme ================= */
+  const lum = (hex) => { const n = parseInt(hex.slice(1), 16); const c = [(n >> 16) & 255, (n >> 8) & 255, n & 255].map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; };
   function applyTheme(acc) {
-    const s = acc ? acc.settings : { theme: 'dark', accent: '#7c5cff', wallpaper: 'aurora' };
+    const s = acc ? acc.settings : { theme: 'dark', accent: 'auto', wallpaper: 'mono', icons: 'mono', bw: false };
     let theme = s.theme;
     if (theme === 'auto') theme = matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
-    document.documentElement.dataset.theme = theme;
-    document.documentElement.style.setProperty('--accent', s.accent);
-    document.body.dataset.wp = s.wallpaper;
+    const de = document.documentElement;
+    de.dataset.theme = theme;
+    de.dataset.bw = s.bw ? '1' : '0';
+    const accent = s.bw || !s.accent || s.accent === 'auto' ? (theme === 'light' ? '#111113' : '#ededee') : s.accent;
+    de.style.setProperty('--accent', accent);
+    de.style.setProperty('--accent-fg', lum(accent) > 0.45 ? '#111113' : '#ffffff');
+    document.body.dataset.wp = s.bw ? 'mono' : s.wallpaper || 'mono';
+    document.body.dataset.icons = s.bw ? 'mono' : s.icons || 'mono';
     const meta = $('meta[name=theme-color]');
-    if (meta) meta.content = theme === 'light' ? '#f4f5f9' : '#0b0d12';
+    if (meta) meta.content = theme === 'light' ? '#f7f7f8' : '#0b0b0c';
   }
 
   function avatar(acc, size = 'md') {
     const g = store.COLORS[acc.color % store.COLORS.length];
-    return h('div', { class: 'avatar ' + size, style: { background: `linear-gradient(135deg, ${g[0]}, ${g[1]})` } }, (acc.name || '?').trim().charAt(0).toUpperCase());
+    return h('div', { class: 'avatar ' + size, style: { background: g[0] } }, (acc.name || '?').trim().charAt(0).toUpperCase());
   }
   function appIcon(a, size = '') {
-    return h('div', { class: 'app-ic ' + size, style: { background: `linear-gradient(145deg, ${a.grad[0]}, ${a.grad[1]})` }, html: icon(a.icon) });
+    return h('div', { class: 'app-ic ' + size, style: { background: `linear-gradient(145deg, ${a.grad[0]}, ${a.grad[1]})`, '--ic': a.grad[0] }, html: icon(a.icon) });
   }
 
   /* ================= Login ================= */
@@ -344,7 +349,7 @@
   }
 
   /* ================= Home ================= */
-  let lastHome = null;
+  let lastHome = null, view = 'start';
   function showHome() {
     const acc = store.current;
     applyTheme(acc);
@@ -352,6 +357,7 @@
     const scr = h('div', { class: 'screen home' });
     root().append(scr);
     lastHome = scr;
+    view = 'start';
     refreshHome();
     startTicker();
     Nova.native.setKiosk(!!acc.settings.kiosk);
@@ -362,45 +368,92 @@
     const acc = store.current;
     const scr = lastHome;
     if (!acc || !scr || !document.body.contains(scr)) return;
+    const prevQ = scr.querySelector('.search-in');
+    const qv = prevQ ? prevQ.value : '';
+    const scrollTop = scr.scrollTop;
     scr.innerHTML = '';
-    const q = h('input', { class: 'search-in', placeholder: 'Apps suchen…', type: 'search' });
-    const body = h('div', { class: 'home-body' });
-    const renderBody = () => {
-      body.innerHTML = '';
+    const userFolders = acc.folders.filter((f) => !f.del);
+    if (view.startsWith('u:') && !userFolders.some((f) => 'u:' + f.id === view)) view = 'start';
+
+    const q = h('input', { class: 'search-in', placeholder: 'Suchen', type: 'search', value: qv });
+    const main = h('main', { class: 'home-main' });
+    const go = (id) => { view = id; q.value = ''; refreshHome(); scr.scrollTop = 0; };
+    const navItem = (id, ic, label, count) => h('button', { class: 'nav-item' + (view === id ? ' on' : ''), onclick: () => go(id) },
+      h('span', { class: 'nav-ic', html: icon(ic) }), h('span', { class: 'nav-label-txt' }, label), count != null ? h('span', { class: 'nav-count' }, count) : null);
+    const nav = h('nav', { class: 'home-nav' },
+      navItem('start', 'home', 'Übersicht'),
+      navItem('all', 'grid', 'Alle Apps', APPS.length),
+      h('div', { class: 'nav-sep' }),
+      FOLDERS.map((f) => navItem(f.id, f.icon, f.name, APPS.filter((a) => a.folder === f.id).length)),
+      h('div', { class: 'nav-head' }, 'Meine Ordner'),
+      userFolders.map((f) => {
+        const b = navItem('u:' + f.id, 'folder', f.name, f.apps.length);
+        ui.onContext(b, (x, y) => ui.menu(x, y, [
+          { label: 'Umbenennen', icon: 'edit', onClick: () => renameFolder(f.id) },
+          { label: 'Ordner löschen', icon: 'trash', danger: true, onClick: () => deleteFolder(f.id) }
+        ]));
+        return b;
+      }),
+      h('button', { class: 'nav-item add', onclick: createFolder }, h('span', { class: 'nav-ic', html: icon('plus') }), h('span', { class: 'nav-label-txt' }, 'Neuer Ordner'))
+    );
+
+    const grid = (apps, opts) => apps.length ? h('div', { class: 'app-grid' }, apps.map((a) => appTile(a, opts))) : h('div', { class: 'empty sm' }, h('p', null, 'Hier ist noch nichts.'));
+    const head = (title, sub, actions) => h('div', { class: 'page-head' }, h('div', null, h('h1', null, title), sub ? h('div', { class: 'muted' }, sub) : null), actions ? h('div', { class: 'row gap wrap' }, actions) : null);
+
+    const renderMain = () => {
+      main.innerHTML = '';
+      const _append = main.append.bind(main);
+      main.append = (...items) => _append(...items.flat(Infinity).filter((x) => x != null && x !== false));
       const term = q.value.trim().toLowerCase();
       if (term) {
         const res = APPS.filter((a) => a.name.toLowerCase().includes(term) || (a.desc || '').toLowerCase().includes(term));
-        body.append(section('Suchergebnisse', res.length ? h('div', { class: 'app-grid' }, res.map((a) => appTile(a))) : h('p', { class: 'muted' }, 'Keine App gefunden.')));
+        main.append(head('Suche', res.length + (res.length === 1 ? ' Ergebnis' : ' Ergebnisse') + ' für „' + q.value.trim() + '"'), grid(res));
         return;
       }
-      if (!acc.lastBackup || Date.now() - acc.lastBackup > 7 * 86400000) {
-        body.append(h('div', { class: 'banner glass' },
-          h('div', { class: 'banner-ic', html: icon('key') }),
-          h('div', { class: 'grow' }, h('b', null, acc.lastBackup ? 'Zeit für eine neue Sicherung' : 'Sichere dein Konto'), h('div', { class: 'muted small' }, 'Mit deinem Konto-Token geht nichts verloren – auch nicht nach dem Löschen der App.')),
-          h('button', { class: 'btn primary sm', onclick: tokenDialog }, 'Sichern')
-        ));
+      if (view === 'start') {
+        const rem = Nova.st.remaining(acc);
+        const openTodos = store.items('todos').filter((t) => !t.done).length;
+        const xp = (acc.data.scores['xp:mathe'] || 0) + (acc.data.scores['xp:deutsch'] || 0);
+        main.append(
+          head((Nova.isBirthday(acc) ? 'Alles Gute zum Geburtstag' : Nova.greeting()) + ', ' + acc.name, Nova.fmtDate()),
+          h('div', { class: 'stats-row' },
+            stat('Bildschirmzeit', rem === Infinity ? 'Unbegrenzt' : Nova.fmtDur(rem, true), 'heute übrig', () => launch('screentime')),
+            stat('Aufgaben', String(openTodos), openTodos === 1 ? 'offen' : 'offen', () => launch('todo')),
+            stat('Lernen', xp + ' XP', 'Mathe & Deutsch', () => launch('mathe'))),
+          (!acc.lastBackup || Date.now() - acc.lastBackup > 7 * 86400000) ? h('div', { class: 'notice' },
+            h('span', { class: 'notice-ic', html: icon('key') }),
+            h('div', { class: 'grow' }, h('b', null, acc.lastBackup ? 'Zeit für eine neue Sicherung' : 'Konto noch nicht gesichert'), h('div', { class: 'muted small' }, 'Mit dem Konto-Token geht nichts verloren – auch nach dem Löschen der App nicht.')),
+            h('button', { class: 'btn sm', onclick: tokenDialog }, 'Sichern')) : null,
+          section('Favoriten', grid(acc.dock.map(app).filter(Boolean), { fav: true }), h('span', { class: 'muted xs' }, 'Rechtsklick / lange drücken zum Anpassen')),
+          acc.recent.length ? section('Zuletzt verwendet', grid(acc.recent.map(app).filter(Boolean).slice(0, 6))) : null
+        );
+      } else if (view === 'all') {
+        main.append(head('Alle Apps', APPS.length + ' Apps'), FOLDERS.map((f) => section(f.name, grid(APPS.filter((a) => a.folder === f.id)))));
+      } else if (view.startsWith('u:')) {
+        const f = userFolders.find((x) => 'u:' + x.id === view);
+        main.append(
+          head(f.name, f.apps.length + (f.apps.length === 1 ? ' App' : ' Apps'), [
+            h('button', { class: 'btn sm primary', onclick: () => manageFolderApps(f), html: icon('plus') + ' Apps auswählen' }),
+            h('button', { class: 'btn sm', onclick: () => renameFolder(f.id) }, 'Umbenennen'),
+            h('button', { class: 'btn sm ghost danger', onclick: () => deleteFolder(f.id) }, 'Löschen')]),
+          f.apps.length ? grid(f.apps.map(app).filter(Boolean), { folder: { ...f, user: true } }) :
+            h('div', { class: 'empty' }, h('p', null, 'Dieser Ordner ist leer.'), h('button', { class: 'btn primary', onclick: () => manageFolderApps(f) }, 'Apps auswählen')));
+      } else {
+        const f = FOLDERS.find((x) => x.id === view);
+        const apps = APPS.filter((a) => a.folder === view);
+        main.append(head(f.name, apps.length + ' Apps'), grid(apps));
       }
-      const userFolders = acc.folders.filter((f) => !f.del);
-      body.append(section('Ordner', h('div', { class: 'folder-grid' },
-        FOLDERS.map((f) => folderCard(f, APPS.filter((a) => a.folder === f.id))),
-        userFolders.map((f, i) => folderCard({ ...f, icon: 'folder', grad: USER_GRADS[(f.c || i) % USER_GRADS.length], user: true }, f.apps.map(app).filter(Boolean))),
-        h('button', { class: 'folder-card add', onclick: createFolder }, h('div', { class: 'add-ic', html: icon('plus') }), h('span', null, 'Neuer Ordner'))
-      )));
-      const recent = acc.recent.map(app).filter(Boolean).slice(0, 8);
-      if (recent.length) body.append(section('Zuletzt verwendet', h('div', { class: 'app-row' }, recent.map((a) => appTile(a)))));
     };
-    q.addEventListener('input', renderBody);
+    q.addEventListener('input', renderMain);
 
     const stPill = h('button', { class: 'pill', id: 'st-pill', onclick: () => launch('screentime') });
     const clock = h('div', { class: 'top-clock', id: 'top-clock' }, Nova.fmtTime());
     scr.append(
       h('header', { class: 'topbar' },
-        h('div', { class: 'top-left' },
-          h('div', { class: 'brand sm' }, h('div', { class: 'brand-mark' }), h('span', null, 'Nova')),
-        ),
+        h('div', { class: 'brand sm' }, h('div', { class: 'brand-mark' }), h('span', null, 'Nova')),
         h('div', { class: 'top-right' },
           stPill, clock,
-          h('button', { class: 'avatar-btn', onclick: (e) => {
+          h('button', { class: 'avatar-btn', title: acc.name, onclick: (e) => {
             const r = e.currentTarget.getBoundingClientRect();
             ui.menu(r.right - 220, r.bottom + 8, [
               { label: 'Einstellungen', icon: 'settings', onClick: () => launch('settings') },
@@ -414,76 +467,43 @@
           } }, avatar(acc, 'sm'))
         )
       ),
-      h('div', { class: 'home-inner' },
-        h('div', { class: 'hello' },
-          h('h1', null, (Nova.isBirthday(acc) ? 'Alles Gute zum Geburtstag' : Nova.greeting()) + ', ' + acc.name + (Nova.isBirthday(acc) ? ' 🎂' : '')),
-          h('div', { class: 'muted' }, Nova.fmtDate())
-        ),
-        h('div', { class: 'search', html: icon('search') }, q),
-        body
-      ),
-      dock()
+      h('div', { class: 'home-layout' },
+        h('aside', { class: 'home-side' }, h('div', { class: 'search', html: icon('search') }, q), nav),
+        main)
     );
-    renderBody();
+    renderMain();
     updatePill();
+    scr.scrollTop = scrollTop;
   }
 
-  function section(title, content) {
-    return h('section', { class: 'sec' }, h('h2', { class: 'sec-title' }, title), content);
+  function stat(label, value, sub, onClick) {
+    return h('button', { class: 'stat', onclick: onClick }, h('span', { class: 'stat-label' }, label), h('b', { class: 'stat-value' }, value), h('span', { class: 'muted xs' }, sub));
   }
-
-  function dock() {
-    const acc = store.current;
-    const items = acc.dock.map(app).filter(Boolean);
-    return h('nav', { class: 'dock glass' },
-      items.map((a) => appTile(a, { dock: true })),
-      items.length ? h('div', { class: 'dock-sep' }) : null,
-      h('button', { class: 'tile dock-tile', title: 'Alle Apps', onclick: allApps }, h('div', { class: 'app-ic ghost', html: icon('grid') }), h('span', null, 'Alle'))
-    );
-  }
-
-  function allApps() {
-    openSheet({ name: 'Alle Apps', icon: 'grid', grad: ['#7c5cff', '#4f8cff'] }, () =>
-      FOLDERS.map((f) => h('div', null, h('h3', { class: 'sheet-sub' }, f.name), h('div', { class: 'app-grid' }, APPS.filter((a) => a.folder === f.id).map((a) => appTile(a)))))
-    );
-  }
-
-  function folderCard(f, apps) {
-    const card = h('button', { class: 'folder-card glass', onclick: () => openFolder(f) },
-      h('div', { class: 'folder-prev' }, apps.slice(0, 4).map((a) => appIcon(a, 'mini')), apps.length === 0 ? h('div', { class: 'folder-empty', html: icon(f.icon) }) : null),
-      h('div', { class: 'folder-meta' },
-        h('span', { class: 'folder-name' }, f.name),
-        h('span', { class: 'muted small' }, apps.length + (apps.length === 1 ? ' App' : ' Apps'))
-      )
-    );
-    if (f.user) ui.onContext(card, (x, y) => ui.menu(x, y, [
-      { label: 'Umbenennen', icon: 'edit', onClick: () => renameFolder(f.id) },
-      { label: 'Ordner löschen', icon: 'trash', danger: true, onClick: () => deleteFolder(f.id) }
-    ]));
-    return card;
+  function section(title, content, extra) {
+    return h('section', { class: 'sec' }, h('div', { class: 'sec-head' }, h('h2', { class: 'sec-title' }, title), extra || null), content);
   }
 
   function appTile(a, opts = {}) {
-    const t = h('button', { class: 'tile' + (opts.dock ? ' dock-tile' : ''), onclick: () => launch(a.id), title: a.desc || a.name },
-      appIcon(a), h('span', null, a.name));
+    const t = h('button', { class: 'tile', onclick: () => launch(a.id), title: a.desc || a.name },
+      appIcon(a), h('span', { class: 'tile-txt' }, h('span', { class: 'tile-name' }, a.name), a.desc ? h('span', { class: 'tile-desc' }, a.desc) : null));
     ui.onContext(t, (x, y) => tileMenu(a, x, y, opts.folder));
     return t;
   }
 
   function tileMenu(a, x, y, folder) {
     const acc = store.current;
-    const inDock = acc.dock.includes(a.id);
+    const fav = acc.dock.includes(a.id);
     ui.menu(x, y, [
       { label: 'Öffnen', icon: 'play', onClick: () => launch(a.id) },
-      { label: inDock ? 'Aus dem Dock entfernen' : 'Zum Dock hinzufügen', icon: 'pin', onClick: () => {
-        if (inDock) acc.dock = acc.dock.filter((x) => x !== a.id);
-        else { if (acc.dock.length >= 6) return ui.toast('Das Dock ist voll (max. 6)', 'err'); acc.dock.push(a.id); }
+      { label: fav ? 'Aus Favoriten entfernen' : 'Zu Favoriten', icon: 'star', onClick: () => {
+        if (fav) acc.dock = acc.dock.filter((x) => x !== a.id);
+        else { if (acc.dock.length >= 9) return ui.toast('Maximal 9 Favoriten', 'err'); acc.dock.push(a.id); }
         store.save(); refreshHome();
       } },
       { label: 'Zu Ordner hinzufügen…', icon: 'folder', onClick: () => addToFolderDialog(a) },
       folder && folder.user ? { label: 'Aus Ordner entfernen', icon: 'x', onClick: () => {
         const f = acc.folders.find((x) => x.id === folder.id);
-        f.apps = f.apps.filter((x) => x !== a.id); f.u = Date.now(); store.save(); refreshHome(); openFolder(folder);
+        f.apps = f.apps.filter((x) => x !== a.id); f.u = Date.now(); store.save(); refreshHome();
       } } : null
     ]);
   }
@@ -495,6 +515,7 @@
     const f = { id: Nova.uid(), name: name.slice(0, 24), apps: [], c: acc.folders.length, u: Date.now() };
     acc.folders.push(f);
     store.save();
+    view = 'u:' + f.id;
     refreshHome();
     ui.toast('Ordner „' + f.name + '" erstellt');
     return f;
@@ -503,12 +524,12 @@
     const f = store.current.folders.find((x) => x.id === id);
     const name = await ui.prompt('Ordner umbenennen', { value: f.name });
     if (!name) return;
-    f.name = name.slice(0, 24); f.u = Date.now(); store.save(); refreshHome(); closeSheet();
+    f.name = name.slice(0, 24); f.u = Date.now(); store.save(); refreshHome();
   }
   async function deleteFolder(id) {
     const f = store.current.folders.find((x) => x.id === id);
     if (!(await ui.confirm('Ordner löschen?', '„' + f.name + '" wird gelöscht. Die Apps bleiben erhalten.', { label: 'Löschen', danger: true }))) return;
-    Object.assign(f, { del: true, apps: [], u: Date.now() }); store.save(); refreshHome(); closeSheet();
+    Object.assign(f, { del: true, apps: [], u: Date.now() }); store.save(); view = 'start'; refreshHome();
   }
 
   async function addToFolderDialog(a) {
@@ -528,7 +549,7 @@
       ]
     });
     if (!pick) return;
-    let f = pick === 'new' ? await createFolder() : acc.folders.find((x) => x.id === pick);
+    const f = pick === 'new' ? await createFolder() : acc.folders.find((x) => x.id === pick);
     if (!f) return;
     if (!f.apps.includes(a.id)) f.apps.push(a.id);
     f.u = Date.now(); store.save(); refreshHome();
@@ -545,23 +566,11 @@
     const ok = await ui.dialog({ title: 'Apps in „' + f.name + '"', wide: true, body: list, actions: [{ label: 'Abbrechen', ghost: true, value: false }, { label: 'Übernehmen', primary: true, value: true }] });
     if (!ok) return;
     f.apps = APPS.map((a) => a.id).filter((id) => sel.has(id));
-    f.u = Date.now(); store.save(); refreshHome(); openFolder({ ...folder, apps: f.apps });
+    f.u = Date.now(); store.save(); refreshHome();
   }
 
   /* ================= Ordner-Ansicht (Sheet) ================= */
   let sheetEl = null;
-  function openFolder(f) {
-    const apps = f.user ? (store.current.folders.find((x) => x.id === f.id) || f).apps.map(app).filter(Boolean) : APPS.filter((a) => a.folder === f.id);
-    openSheet(f, () => [
-      apps.length ? h('div', { class: 'app-grid' }, apps.map((a) => appTile(a, { folder: f }))) :
-        h('div', { class: 'empty' }, h('div', { html: icon('folder') }), h('p', null, 'Dieser Ordner ist noch leer.')),
-      f.user ? h('div', { class: 'row gap sheet-foot' },
-        h('button', { class: 'btn primary', onclick: () => manageFolderApps(f), html: icon('plus') + ' Apps auswählen' }),
-        h('button', { class: 'btn', onclick: () => renameFolder(f.id), html: icon('edit') + ' Umbenennen' }),
-        h('button', { class: 'btn danger ghost', onclick: () => deleteFolder(f.id), html: icon('trash') + ' Löschen' })
-      ) : null
-    ]);
-  }
   function openSheet(f, content) {
     closeSheet();
     const sheet = h('div', { class: 'sheet glass' },

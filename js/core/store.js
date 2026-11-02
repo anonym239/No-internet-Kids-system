@@ -48,7 +48,7 @@
       created: now,
       updated: now,
       lastBackup: 0,
-      settings: { theme: 'dark', accent: 'auto', wallpaper: 'mono', icons: 'mono', bw: false, v3: true, sound: true, kiosk: false, simple: null, u: now },
+      settings: { theme: 'dark', accent: 'auto', wallpaper: 'mono', icons: 'mono', bw: false, fx: false, v3: true, sound: true, kiosk: false, simple: null, u: now },
       folders: [],
       dock: ['mathe', 'deutsch', 'todo', 'notes', 'calc', 'runner'],
       recent: [],

@@ -13,6 +13,7 @@ Diese Datei liest jede neue Claude-Sitzung in diesem Repo automatisch. Sie enth�
    - Keine Glas-/Blur-Effekte, keine bunten Farbverläufe in der Oberfläche, keine Emojis in UI-Texten (Ausnahme: Erklär-Stufe 1 für sehr kleine Kinder)
    - App-Symbole standardmäßig „Schlicht“ (monochrom). „Dezent“/„Bunt“ sind nur Optionen.
    - Es gibt einen **Schwarz-Weiß-Modus** (`settings.bw`)
+   - Effekte (Glas/Blur, Schatten, Animationen, farbige Hintergründe) sind **optional**: Schalter „Effekte“ (`settings.fx`, CSS `:root[data-fx="1"]`), standardmäßig aus.
    - Muss auf PC **und** Handy (hoch und quer) gut aussehen. Vor dem Push mit Playwright in 1366×820, 390×844 und 844×390 prüfen.
 5. **Keine Nachbauten bestimmter Spiele.** Eigene Spiele sind Genre-Spiele (Runner, Rhythmus-Jump …). Die originalen Spiele (Subway Surfers, Geometry Dash …) werden nur über die App „Echte Spiele“ einmalig aus dem Play Store installiert.
 

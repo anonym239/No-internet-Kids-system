@@ -34,6 +34,7 @@
     const de = document.documentElement;
     de.dataset.theme = theme;
     de.dataset.bw = s.bw ? '1' : '0';
+    de.dataset.fx = s.fx ? '1' : '0';
     const accent = s.bw || !s.accent || s.accent === 'auto' ? (theme === 'light' ? '#111113' : '#ededee') : s.accent;
     de.style.setProperty('--accent', accent);
     de.style.setProperty('--accent-fg', lum(accent) > 0.45 ? '#111113' : '#ffffff');

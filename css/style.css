@@ -1068,3 +1068,45 @@ body[data-icons="tint"] .app-ic { background: color-mix(in srgb, var(--ic, #888)
   .nav-item.on { background: var(--surface-2); color: var(--text); }
   .home-main { padding: 14px 16px 24px; }
 }
+
+/* ================================================================
+   Effekte (Einstellungen → Effekte). Aus = clean, an = Glas, Tiefe, Bewegung
+   ================================================================ */
+:root[data-fx="1"] {
+  --surface: rgba(255, 255, 255, 0.045);
+  --surface-2: rgba(255, 255, 255, 0.08);
+  --surface-3: rgba(255, 255, 255, 0.14);
+  --border: rgba(255, 255, 255, 0.09);
+  --glass: rgba(18, 18, 22, 0.62);
+  --shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+  --wp-op: 1;
+}
+:root[data-fx="1"][data-theme="light"] {
+  --surface: rgba(255, 255, 255, 0.66);
+  --surface-2: rgba(17, 17, 19, 0.05);
+  --surface-3: rgba(17, 17, 19, 0.1);
+  --border: rgba(17, 17, 19, 0.08);
+  --glass: rgba(255, 255, 255, 0.7);
+  --shadow: 0 24px 64px rgba(17, 17, 19, 0.14);
+  --wp-op: 0.6;
+}
+:root[data-fx="1"] body::before { transition: opacity .4s; }
+:root[data-fx="1"] .topbar { background: color-mix(in srgb, var(--bg) 55%, transparent); }
+:root[data-fx="1"] .topbar, :root[data-fx="1"] .tile, :root[data-fx="1"] .stat, :root[data-fx="1"] .notice,
+:root[data-fx="1"] .card, :root[data-fx="1"] .glass, :root[data-fx="1"] .login-panel, :root[data-fx="1"] .search-in,
+:root[data-fx="1"] .pill, :root[data-fx="1"] .learn-hero, :root[data-fx="1"] .topic, :root[data-fx="1"] .quiz-card {
+  backdrop-filter: blur(22px) saturate(1.4); -webkit-backdrop-filter: blur(22px) saturate(1.4);
+}
+:root[data-fx="1"] .login-panel, :root[data-fx="1"] .lock { background: var(--glass); box-shadow: var(--shadow); }
+:root[data-fx="1"] .win { background: var(--glass); backdrop-filter: blur(30px) saturate(1.3); -webkit-backdrop-filter: blur(30px) saturate(1.3); transform: translateY(14px) scale(.985); transition: transform .26s cubic-bezier(.2, .9, .3, 1.1); }
+:root[data-fx="1"] .win-wrap.show .win { transform: none; }
+:root[data-fx="1"] .win-head { background: transparent; }
+:root[data-fx="1"] .win-wrap, :root[data-fx="1"] .dialog-wrap, :root[data-fx="1"] .sheet-wrap { backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); background: rgba(0, 0, 0, .4); }
+:root[data-fx="1"] .tile, :root[data-fx="1"] .stat, :root[data-fx="1"] .topic { transition: transform .18s, box-shadow .18s, border-color .18s; }
+:root[data-fx="1"] .tile:hover, :root[data-fx="1"] .stat:hover, :root[data-fx="1"] .topic:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
+:root[data-fx="1"] .btn.primary { box-shadow: 0 6px 20px color-mix(in srgb, var(--accent) 35%, transparent); }
+:root[data-fx="1"] .page-head, :root[data-fx="1"] .stats-row, :root[data-fx="1"] .sec, :root[data-fx="1"] .notice { animation: rise .42s ease both; }
+:root[data-fx="1"] .stats-row { animation-delay: .04s; }
+:root[data-fx="1"] .sec:nth-of-type(1) { animation-delay: .08s; }
+:root[data-fx="1"] .sec:nth-of-type(2) { animation-delay: .12s; }
+:root[data-fx="1"] .dialog, :root[data-fx="1"] .ctx-menu { box-shadow: var(--shadow); }

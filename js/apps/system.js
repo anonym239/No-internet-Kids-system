@@ -56,6 +56,7 @@
           ),
           group('Aussehen',
             row('Design', null, shell().seg([['Dunkel', 'dark'], ['Hell', 'light'], ['System', 'auto']], acc.settings.theme, (v) => { acc.settings.theme = v; saveSettings(); })),
+            row('Effekte', 'Glas & Unschärfe, Schatten, Animationen und farbige Hintergründe', h('input', { type: 'checkbox', class: 'switch', checked: !!acc.settings.fx, onchange: (e) => { acc.settings.fx = e.target.checked; if (acc.settings.fx && (!acc.settings.wallpaper || acc.settings.wallpaper === 'mono')) acc.settings.wallpaper = 'aurora'; saveSettings(); render(); } })),
             row('Schwarz-Weiß', 'Alles in Graustufen – ohne Farben', h('input', { type: 'checkbox', class: 'switch', checked: !!acc.settings.bw, onchange: (e) => { acc.settings.bw = e.target.checked; saveSettings(); render(); } })),
             acc.settings.bw ? null : row('App-Symbole', null, shell().seg([['Schlicht', 'mono'], ['Dezent', 'tint'], ['Bunt', 'color']], acc.settings.icons || 'mono', (v) => { acc.settings.icons = v; saveSettings(); })),
             acc.settings.bw ? null : row('Akzentfarbe', null, accents),

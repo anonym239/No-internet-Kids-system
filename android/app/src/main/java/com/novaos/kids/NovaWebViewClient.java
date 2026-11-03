@@ -8,6 +8,7 @@ import com.getcapacitor.Bridge;
 import com.getcapacitor.BridgeWebViewClient;
 import java.io.ByteArrayInputStream;
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Internet-Sperre für Nova: Die App darf nur ihre eigenen Dateien laden (https://localhost).
@@ -36,6 +37,15 @@ public class NovaWebViewClient extends BridgeWebViewClient {
             h.put("Access-Control-Allow-Origin", "*");
             return new WebResourceResponse("text/plain", "utf-8", 403, "Blocked", h, new ByteArrayInputStream(new byte[0]));
         }
-        return super.shouldInterceptRequest(view, request);
+        WebResourceResponse r = super.shouldInterceptRequest(view, request);
+        // Isolierter Modus (COOP/COEP): erlaubt der KI, mehrere Prozessorkerne zu nutzen
+        if (r != null && "localhost".equals(host)) {
+            Map<String, String> h = r.getResponseHeaders() == null ? new HashMap<>() : new HashMap<>(r.getResponseHeaders());
+            h.put("Cross-Origin-Opener-Policy", "same-origin");
+            h.put("Cross-Origin-Embedder-Policy", "require-corp");
+            h.put("Cross-Origin-Resource-Policy", "same-origin");
+            r.setResponseHeaders(h);
+        }
+        return r;
     }
 }

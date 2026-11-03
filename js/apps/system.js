@@ -87,7 +87,7 @@
           group('Gefahrenzone',
             row('Konto von diesem Gerät löschen', 'Sichere vorher deinen Token, sonst ist alles weg', h('button', { class: 'btn sm danger', onclick: deleteAccount }, 'Löschen'))
           ),
-          h('div', { class: 'muted xs center about' }, 'Nova OS · Version 1.1.0 · ' + ({ web: 'Web', electron: 'Windows/PC', android: 'Android' })[Nova.native.platform] + ' · 100 % offline · Keine Werbung · Keine Datensammlung')
+          h('div', { class: 'muted xs center about' }, 'Nova OS · Version 1.1.1 · ' + ({ web: 'Web', electron: 'Windows/PC', android: 'Android' })[Nova.native.platform] + ' · 100 % offline · Keine Werbung · Keine Datensammlung')
         );
       };
       function guardRow() {

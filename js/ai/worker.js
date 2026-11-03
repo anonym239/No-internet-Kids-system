@@ -18,7 +18,9 @@ env.localModelPath = new URL('../../models/', import.meta.url).pathname; // rein
 env.allowRemoteModels = false; // niemals selbst nachladen – Downloads macht nur der Installer nach Zustimmung
 env.useBrowserCache = true;
 env.backends.onnx.wasm.wasmPaths = new URL('../../vendor/transformers/', import.meta.url).href;
-env.backends.onnx.wasm.numThreads = self.crossOriginIsolated ? Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1)) : 1;
+// Mehrere Kerne nutzen, wenn der Browser geteilten Speicher erlaubt (isolierter Modus)
+const canThread = self.crossOriginIsolated === true || (typeof SharedArrayBuffer !== 'undefined' && self.crossOriginIsolated !== false);
+env.backends.onnx.wasm.numThreads = canThread ? Math.max(1, Math.min(4, (navigator.hardwareConcurrency || 2) - 1)) : 1;
 
 /* Modelle, bei denen der Prozessor zuerst das Bild und dann den Text erwartet */
 const IMAGE_FIRST = new Set(['lfm2_vl', 'lfm3_vl']);

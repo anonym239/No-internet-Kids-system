@@ -57,10 +57,13 @@ jobs:
           path: models
       - name: KI-Bibliothek bereitstellen
         run: node scripts/vendor.js
-      - name: Browser installieren
+      - name: Browser finden (vorinstalliertes Chrome)
         run: |
-          npm install --no-save playwright@1.56.1
-          npx playwright install --with-deps chromium
+          P=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser)
+          echo "Browser: $P"
+          "$P" --version
+          echo "CHROME_PATH=$P" >> "$GITHUB_ENV"
+          npm install --no-save playwright-core@1.56.1
       - name: KI-Test
         run: node scripts/ai-smoke-test.js
 

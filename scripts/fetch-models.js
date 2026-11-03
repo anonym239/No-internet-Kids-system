@@ -32,10 +32,13 @@ function components(files) {
   return comps;
 }
 /* Wählt pro Bauteil die erste Variante aus der Wunschliste. dtype ist ein String (alle gleich) oder ein Objekt. */
-function choose(comps, pref) {
+function choose(comps, pref, smallestOf) {
   const dt = {}, files = [];
+  const sz = (list) => list.reduce((s, f) => s + f.size, 0);
   for (const [name, vars] of Object.entries(comps)) {
-    const d = pref.find((x) => vars[x]);
+    let d = pref.find((x) => vars[x]);
+    // Für den Prozessor: unter den gut laufenden Varianten die kleinste nehmen (spart Speicher und Download)
+    if (smallestOf) { const c = smallestOf.filter((x) => vars[x]).sort((a, b) => sz(vars[a]) - sz(vars[b])); if (c.length) d = c[0]; }
     if (!d) return null;
     dt[name] = d; files.push(...vars[d]);
   }
@@ -79,7 +82,7 @@ async function download(id, file) {
       const meta = files.filter((f) => isMeta(f.path));
       const comps = components(files);
       if (!Object.keys(comps).length) throw new Error('keine ONNX-Dateien gefunden');
-      const wasm = choose(comps, WASM_PREF);
+      const wasm = choose(comps, WASM_PREF, ['q4', 'q8', 'int8', 'uint8']);
       const gpu = choose(comps, GPU_PREF);
       if (!wasm) throw new Error('keine passende ONNX-Variante');
       const metaSize = meta.reduce((s, f) => s + f.size, 0);

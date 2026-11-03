@@ -1,6 +1,7 @@
 /* KI-Test in GitHub Actions: lädt das vorinstallierte Modell in einem echten Browser
  * und prüft, dass es auf Deutsch antwortet und ein Bild beschreiben kann. */
-const { chromium } = require('playwright');
+let pw; try { pw = require('playwright-core'); } catch (e) { pw = require('playwright'); }
+const { chromium } = pw;
 const { spawn } = require('child_process');
 const path = require('path');
 
@@ -8,7 +9,7 @@ const path = require('path');
   const root = path.join(__dirname, '..');
   const server = spawn('python3', ['-m', 'http.server', '8799'], { cwd: root, stdio: 'ignore' });
   await new Promise((r) => setTimeout(r, 1500));
-  const browser = await chromium.launch();
+  const browser = await chromium.launch(process.env.CHROME_PATH ? { executablePath: process.env.CHROME_PATH } : {});
   const page = await browser.newPage();
   const errors = [], external = [];
   page.on('pageerror', (e) => errors.push(e.message));

@@ -52,7 +52,7 @@
   const TINT = {
     runner: '#f97316', pulse: '#7c3aed', snake: '#16a34a', memory: '#db2777', four: '#ca8a04', bricks: '#0284c7', realgames: '#059669',
     mathe: '#2563eb', deutsch: '#dc2626', calc: '#475569', todo: '#65a30d', notes: '#d97706', timer: '#e11d48', cards: '#4f46e5',
-    draw: '#c026d3', pixel: '#0d9488', beats: '#9333ea', gallery: '#0891b2', settings: '#52525b', screentime: '#6d28d9'
+    draw: '#c026d3', pixel: '#0d9488', beats: '#9333ea', gallery: '#0891b2', settings: '#52525b', screentime: '#6d28d9', assistant: '#0ea5e9'
   };
   function appIcon(a, size = '') {
     return h('div', { class: 'app-ic ' + size, style: { background: `linear-gradient(145deg, ${a.grad[0]}, ${a.grad[1]})`, '--ic': TINT[a.id] || a.grad[0] }, html: icon(a.icon) });

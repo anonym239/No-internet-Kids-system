@@ -1,7 +1,7 @@
 {
   "name": "nova-os",
   "productName": "Nova OS",
-  "version": "1.0.2",
+  "version": "1.1.0",
   "description": "Nova OS – internetfreies System für Kinder und Jugendliche",
   "author": "Nova OS",
   "license": "UNLICENSED",
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "@capacitor/cli": "^8.6.0",
+    "@huggingface/transformers": "4.3.2",
     "electron": "^45.2.1",
     "electron-builder": "^26.18.0"
   },
@@ -66,6 +67,7 @@
       "deleteAppDataOnUninstall": false,
       "language": "1031",
       "runAfterFinish": true
-    }
+    },
+    "asar": false
   }
 }

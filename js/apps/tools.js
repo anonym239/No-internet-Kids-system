@@ -182,6 +182,7 @@
         title.value = n.title; text.value = n.text; info.textContent = Nova.relTime(n.u);
         colorRow.innerHTML = '';
         NOTE_COLORS.forEach((c) => colorRow.append(h('button', { class: 'dot' + (n.color === c ? ' on' : ''), style: { background: c }, onclick: () => { n.color = c; store.put('notes', n); open(n); renderList(); } })));
+        if (Nova.aiTextHelper) colorRow.append(h('button', { class: 'btn sm ghost ai-note-btn', title: 'Mit Nova KI bearbeiten', onclick: () => Nova.aiTextHelper(text.value, (res, replace) => { text.value = replace ? res : text.value + '\n\n' + res; text.dispatchEvent(new Event('input')); }), html: icon('a-ai') + ' KI' }));
         colorRow.append(h('button', { class: 'icon-btn sm', title: 'Löschen', onclick: async () => { if (await ui.confirm('Notiz löschen?', null, { label: 'Löschen', danger: true })) { store.del('notes', n.id); cur = null; wrap.classList.remove('editing'); renderList(); showEmpty(); } }, html: icon('trash') }));
         editor.classList.remove('hidden');
         renderList();

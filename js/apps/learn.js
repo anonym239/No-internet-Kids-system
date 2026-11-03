@@ -146,8 +146,10 @@
               fb.append(
                 h('div', { class: 'fb-title' }, ok ? S(P.level, { 1: 'Super gemacht! ⭐', 3: pick(['Richtig! ✓', 'Stark! ✓', 'Genau! ✓']) + (streakRun >= 3 ? ' · ' + streakRun + ' in Folge 🔥' : ''), 5: 'Korrekt.' }) : 'Nicht ganz – richtig ist: ' + answerText(task)),
                 exp ? h('div', { class: 'fb-exp' }, ok ? h('details', null, h('summary', null, 'Warum?'), h('div', null, exp)) : exp) : null,
-                h('button', { class: 'btn primary', onclick: () => { k++; next(); } }, k + 1 >= N ? 'Ergebnis' : 'Weiter'));
-              fb.querySelector('.btn').focus();
+                h('div', { class: 'row gap fb-actions' },
+                  !ok && Nova.aiExplain ? h('button', { class: 'btn ghost', onclick: () => Nova.aiExplain('Nova KI erklärt', 'Ich übe gerade ' + def.name + ', Thema „' + t.title + '". Die Aufgabe war: ' + (task.lead ? task.lead + ' ' : '') + task.q + (given != null ? ' Meine Antwort war: ' + given + '.' : '') + ' Richtig ist: ' + answerText(task) + '. Erkläre mir bitte Schritt für Schritt und anders als im Lehrbuch, wie man darauf kommt.'), html: icon('a-ai') + ' Nova KI fragen' }) : null,
+                  h('button', { class: 'btn primary', onclick: () => { k++; next(); } }, k + 1 >= N ? 'Ergebnis' : 'Weiter')));
+              fb.querySelector('.btn.primary').focus();
               if (task.type === 'choice') view.querySelectorAll('.quiz-choice').forEach((b) => { b.disabled = true; if (b.dataset.v === String(task.answer)) b.classList.add('right'); else if (b.dataset.v === given) b.classList.add('wrong'); });
             };
             let inputArea;
@@ -156,7 +158,7 @@
             } else {
               const inp = h('input', { class: 'input quiz-in', inputmode: task.type === 'num' && !task.allowText ? 'decimal' : 'text', autocomplete: 'off', placeholder: task.placeholder || 'Antwort' });
               const go = () => { if (!inp.value.trim()) return; inp.disabled = true; done(check(task, inp.value), inp.value); };
-              inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (!answered) go(); else fb.querySelector('.btn') && fb.querySelector('.btn').click(); } });
+              inp.addEventListener('keydown', (e) => { if (e.key === 'Enter') { if (!answered) go(); else fb.querySelector('.btn.primary') && fb.querySelector('.btn.primary').click(); } });
               inputArea = h('div', { class: 'quiz-input' }, inp, h('button', { class: 'btn primary lg', onclick: go }, 'Prüfen'), task.hint ? h('div', { class: 'muted xs' }, task.hint) : null);
               setTimeout(() => inp.focus(), 60);
             }

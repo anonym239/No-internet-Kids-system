@@ -1,4 +1,4 @@
-# Nova OS 1.0
+# Nova OS 1.1
 
 **Ein komplett internetfreies System für Kinder und Jugendliche – für PC und Handy.**
 Ruhiges, cleanes Design: Seitenleiste mit Ordnern, schlichte Symbole, Dunkel/Hell und ein Schwarz-Weiß-Modus. Wer es lebendiger mag, schaltet in den Einstellungen **Effekte** ein (Glas, Schatten, Animationen, farbige Hintergründe). Kein Server, keine Werbung, keine Datensammlung.
@@ -9,8 +9,8 @@ Unter **[Releases](../../releases)** liegen fertige Dateien:
 
 | Gerät | Datei | Installation |
 |---|---|---|
-| 🤖 Android | `Nova-OS-1.0.2.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
-| 🪟 Windows | `Nova-OS-Setup-1.0.2.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
+| 🤖 Android | `Nova-OS-1.1.0.apk` | Herunterladen und öffnen. Beim ersten Mal „Installation aus unbekannten Quellen“ erlauben. |
+| 🪟 Windows | `Nova-OS-Setup-1.1.0.exe` | Setup starten, Ordner wählen und fertig. Es entstehen Symbole auf dem Desktop und im Startmenü. Warnt SmartScreen, „Weitere Informationen“ → „Trotzdem ausführen“ wählen. |
 
 Die Dateien baut GitHub Actions bei jedem Push automatisch (`.github/workflows/build.yml`).
 
@@ -54,6 +54,16 @@ Die Dateien baut GitHub Actions bei jedem Push automatisch (`.github/workflows/b
 - **Mathe:** 19 Themen von Klasse 1 bis 11, von „Plus bis 20“ über Einmaleins, Brüche, Prozent und Gleichungen bis zu Pythagoras und der pq-Formel
 - **Deutsch:** 15 Themen von Klasse 1 bis 9: der/die/das, Silben, Groß- und Kleinschreibung, Plural, Wortarten, s/ss/ß, das/dass, Zeitformen, Satzglieder, die vier Fälle, Kommas, Rechtschreibung, Synonyme
 - Die Aufgaben werden immer neu erzeugt. Dazu gibt es Sterne, XP, eine Lern-Serie (Tage) und eine Erklärung zu jeder Aufgabe.
+
+### Nova KI – lokale künstliche Intelligenz (neu)
+- **Chatten, Bilder verstehen, Texte verbessern.** Alles läuft **komplett auf dem Gerät**, ohne Cloud und ohne Internet.
+- **Vorinstalliert:** „Nova Alleskönner“ (LFM2.5-VL-450M). Es chattet auf Deutsch und erkennt Bilder. GitHub Actions lädt es beim Bauen und baut es direkt in APK und Setup ein.
+- **Weitere Modelle nachinstallieren** (Qwen, Gemma 3, Gemma 3n E2B, Llama 3.2, SmolVLM …): Dafür ist das Passwort bzw. die Eltern-PIN nötig. Nur während des Downloads wird das Internet kurz freigeschaltet, danach ist Nova wieder komplett offline.
+- **Chatten geht ohne Passwort.** Die KI ist kindgerecht eingestellt: Sie antwortet passend zum Alter, erklärt bei Hausaufgaben den Weg statt nur die Lösung, lehnt ungeeignete Themen ab und verweist bei Sorgen auf Eltern oder die Nummer gegen Kummer (116 111).
+- **Hilft in anderen Apps:**
+  - **Notizen:** „KI“ → Rechtschreibung korrigieren, schöner formulieren, kürzen, zusammenfassen
+  - **Mathe und Deutsch:** Nach einer falschen Antwort erklärt „Nova KI fragen“ den Lösungsweg
+- **Technik:** Transformers.js 4 mit ONNX Runtime (WebAssembly bzw. Grafikkarte). Die Berechnung läuft im eigenen Thread, die Chats werden im Konto gespeichert und synchronisiert.
 
 ### Echte Spiele (optional, „einmalige Installation“)
 Hat man bei der Einrichtung *Mit einmaliger Installation* gewählt, kann man in der Android-App **Subway Surfers, Geometry Dash (Lite), Temple Run 2, Hill Climb Racing, Jetpack Joyride, Fruit Ninja, Crossy Road und Minecraft** einmalig aus dem Play Store installieren. Danach startet Nova sie direkt, und sie laufen ohne Internet. Die Spielzeit wird zur Bildschirmzeit gezählt.
@@ -99,8 +109,10 @@ Hinweis zur Signierung: Die APK wird mit `android/nova-release.keystore` signier
 
 ```
 index.html
-electron/  Windows-Hülle (Schließen-Schutz, Kiosk, blockiert jedes Netzwerk)
-android/   Android-Projekt (Capacitor; ohne INTERNET-Berechtigung; NovaKiosk- und NovaGuard-Plugin, GuardService)
+electron/  Windows-Hülle (nova://-Protokoll, Schließen-Schutz, Kiosk, blockiert jedes Netzwerk außer erlaubten KI-Downloads)
+android/   Android-Projekt (Capacitor; NovaWebViewClient sperrt jedes Netzwerk außer erlaubten KI-Downloads; NovaKiosk-, NovaGuard-Plugin, GuardService)
+js/ai/     Nova KI: ai.js (Modelle, Installer, Regeln), worker.js (Berechnung)
+scripts/   fetch-models.js (lädt KI-Modelle in CI), ai-catalog.json, ai-smoke-test.js, vendor.js, build-web.js
 css/style.css
 js/core/   sha256 · util · icons · store (Konten/Token/Sync) · screentime · persona (Alter) · native · shell (UI) · onboarding
 js/apps/   kit · games · storegames · learn (Mathe) · learn-de (Deutsch) · creative · tools · system

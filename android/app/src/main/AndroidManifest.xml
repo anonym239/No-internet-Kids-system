@@ -54,7 +54,8 @@
         </provider>
     </application>
 
-    <!-- Nova selbst braucht KEIN Internet – daher keine INTERNET-Berechtigung. -->
+    <!-- Internet nur für erlaubte KI-Modell-Downloads. Nova sperrt sonst JEDE Verbindung (NovaWebViewClient). -->
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <!-- Nova-Schutz (Verlassen nur mit Passwort) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />

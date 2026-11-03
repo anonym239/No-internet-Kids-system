@@ -2,6 +2,11 @@
 (function () {
   'use strict';
   const Nova = window.Nova;
+  // Windows: Daten aus der alten Version (vor dem Wechsel auf nova://) übernehmen
+  try {
+    const old = window.novaElectron && window.novaElectron.takeMigration && window.novaElectron.takeMigration();
+    if (old) for (const k in old) if (localStorage.getItem(k) == null) localStorage.setItem(k, old[k]);
+  } catch (e) { /* nichts zu übernehmen */ }
   Nova.native.init({
     onBack: () => Nova.shell.handleBack(),
     onExitRequest: () => Nova.shell.requestExit(),

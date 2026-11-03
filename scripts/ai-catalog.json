@@ -1,0 +1,13 @@
+{
+  "_info": "KI-Modelle für Nova KI. bundled=true wird beim Build von GitHub Actions geladen und in APK/Setup eingebaut. Die übrigen kann man in der App mit Internet + Passwort nachinstallieren.",
+  "models": [
+    { "id": "onnx-community/LFM2.5-VL-450M-ONNX", "name": "Nova Alleskönner", "desc": "Chatten und Bilder erkennen – klein, schnell und versteht Deutsch.", "kind": "vlm", "bundled": true, "maker": "Liquid AI" },
+    { "id": "onnx-community/Qwen2.5-0.5B-Instruct", "name": "Qwen 2.5 Mini", "desc": "Sehr schneller Chat, gut für einfache Fragen.", "kind": "text", "maker": "Alibaba Qwen" },
+    { "id": "onnx-community/Qwen2.5-1.5B-Instruct", "name": "Qwen 2.5", "desc": "Klüger und besser in Deutsch – braucht mehr Speicher.", "kind": "text", "maker": "Alibaba Qwen" },
+    { "id": "onnx-community/Qwen3-0.6B-ONNX", "name": "Qwen 3 Mini", "desc": "Neuere Generation, gut in Mathe.", "kind": "text", "maker": "Alibaba Qwen", "think": true },
+    { "id": "onnx-community/gemma-3-1b-it-ONNX", "name": "Gemma 3", "desc": "Googles kleines Chat-Modell.", "kind": "text", "maker": "Google" },
+    { "id": "onnx-community/Llama-3.2-1B-Instruct", "name": "Llama 3.2", "desc": "Metas kleines Chat-Modell.", "kind": "text", "maker": "Meta" },
+    { "id": "HuggingFaceTB/SmolVLM-500M-Instruct", "name": "SmolVLM", "desc": "Bilder beschreiben (antwortet am besten auf Englisch).", "kind": "vlm", "maker": "Hugging Face" },
+    { "id": "onnx-community/gemma-3n-E2B-it-ONNX", "name": "Gemma 3n E2B", "desc": "Großer Alleskönner für Text und Bilder. Sehr groß – am besten für PC oder starke Handys.", "kind": "vlm", "maker": "Google", "heavy": true }
+  ]
+}

@@ -22,12 +22,19 @@ Diese Datei liest jede neue Claude-Sitzung in diesem Repo automatisch. Sie enth�
 - Abmelden und Verlassen nur mit Passwort. Ist eine Eltern-PIN eingerichtet, standardmäßig nur mit Eltern-PIN (`settings.exitAuth`).
 - Android: `GuardService` und `NovaGuardPlugin` holen Nova zurück, wenn Home oder Übersicht gedrückt wird, auch aus über Nova gestarteten Spielen. Windows: Schließen wird in `electron/main.js` abgefangen.
 
+## Nova KI (lokale KI)
+- Läuft komplett lokal (Transformers.js 4 und ONNX Runtime im Web Worker `js/ai/worker.js`). Nie Daten in eine Cloud schicken.
+- Vorinstallierte Modelle legt `scripts/ai-catalog.json` fest (`bundled: true`). GitHub Actions lädt sie (`scripts/fetch-models.js`), testet sie im echten Browser (`scripts/ai-smoke-test.js`) und baut sie in APK und EXE ein. `models/` und `vendor/` sind nicht im Git.
+- Weitere Modelle nur mit Passwort bzw. Eltern-PIN installieren. Das Internet ist dabei nur während des Downloads frei (Android `NovaWebViewClient`, Electron `nova:net`).
+- Chatten ohne Passwort. Der Systemprompt ist kindgerecht (`Nova.ai.systemPrompt`).
+- Lokales Testen ohne Hugging Face: winziges Testmodell unter `models/nova-test/…` und `models/catalog.json` anlegen.
+
 ## Aufbau
 - Reine Web-App (HTML/CSS/JS, kein Build-Schritt), Einstieg `index.html`
 - `js/core/`: `store.js` (Konten, Token, Sync), `screentime.js` (Limits, HMAC-Codes), `persona.js` (Alter → Erklär-Stil), `native.js` (Android/Electron-Brücke), `shell.js` (UI), `onboarding.js` (Konto-Assistent)
 - `js/apps/`: alle Apps, die sich mit `Nova.registerApp({...})` registrieren. Lern-Apps nutzen `Nova.learnApp`.
-- `electron/`: Windows-Hülle (Schließen nur mit Passwort, blockiert jedes Netzwerk)
-- `android/`: Capacitor-Projekt (ohne INTERNET-Berechtigung, `NovaKioskPlugin`)
+- `electron/`: Windows-Hülle (lädt über `nova://`, Schließen nur mit Passwort, blockiert jedes Netzwerk, übernimmt Daten der alten file://-Version)
+- `android/`: Capacitor-Projekt (`NovaWebViewClient` sperrt jedes Netzwerk außer erlaubten KI-Downloads, `NovaKioskPlugin`, `NovaGuardPlugin`)
 - `scripts/build-web.js` kopiert die Web-App nach `www/` (für Electron und Capacitor)
 
 ## Testen

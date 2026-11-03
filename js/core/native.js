@@ -44,6 +44,14 @@
       window.open(web, '_blank', 'noopener');
       return true;
     },
+    /* ---- Internet: standardmäßig gesperrt, nur für erlaubte Modell-Downloads kurz offen ---- */
+    async setNetwork(on) {
+      try {
+        if (isElectron && window.novaElectron.setNetwork) await window.novaElectron.setNetwork(!!on);
+        else if (isAndroid) { const k = plugin('NovaKiosk'); if (k) await k.setNetwork({ allowed: !!on }); }
+      } catch (e) { /* nicht unterstützt */ }
+    },
+
     /* ---- Dateien: Token speichern, teilen, Sicherungen finden ---- */
     BACKUP_DIR: 'Nova',
     async saveFile(name, text) {

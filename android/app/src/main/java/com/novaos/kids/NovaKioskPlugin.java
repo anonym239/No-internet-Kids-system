@@ -61,6 +61,13 @@ public class NovaKioskPlugin extends Plugin {
         }
     }
 
+    /** Internet nur für erlaubte KI-Modell-Downloads kurz freigeben */
+    @PluginMethod
+    public void setNetwork(PluginCall call) {
+        NovaWebViewClient.downloadAllowed = Boolean.TRUE.equals(call.getBoolean("allowed", false));
+        call.resolve();
+    }
+
     /** Abstände für Kamera-Loch/Notch in dp (Nova setzt sie als CSS-Variablen) */
     @PluginMethod
     public void insets(PluginCall call) {

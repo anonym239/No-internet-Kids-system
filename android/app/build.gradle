@@ -7,8 +7,8 @@ android {
         applicationId "com.novaos.kids"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 10
-        versionName "1.0.2"
+        versionCode 11
+        versionName "1.1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -26,6 +26,10 @@ android {
             keyAlias System.getenv("NOVA_KEY_ALIAS") ?: "nova"
             keyPassword System.getenv("NOVA_KEY_PASSWORD") ?: "nova-release-key"
         }
+    }
+    // KI-Modelle und WebAssembly unkomprimiert ablegen (schnelleres Laden, weniger Speicher)
+    androidResources {
+        noCompress.addAll(['onnx', 'onnx_data', 'wasm'])
     }
     buildTypes {
         release {

@@ -1,11 +1,11 @@
 /* Nova OS – Service Worker: macht die App komplett offline-fähig */
-const VERSION = 'nova-1.0.2';
+const VERSION = 'nova-1.1.0';
 const FILES = [
   './', './index.html', './manifest.webmanifest', './css/style.css',
   './icons/icon.svg', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png',
   './js/core/sha256.js', './js/core/util.js', './js/core/icons.js', './js/core/store.js',
   './js/core/screentime.js', './js/core/persona.js', './js/core/native.js', './js/core/shell.js', './js/core/onboarding.js',
-  './js/apps/kit.js', './js/apps/games.js', './js/apps/storegames.js', './js/apps/learn.js', './js/apps/learn-de.js', './js/apps/creative.js', './js/apps/tools.js', './js/apps/system.js',
+  './js/apps/kit.js', './js/apps/games.js', './js/apps/storegames.js', './js/apps/learn.js', './js/apps/learn-de.js', './js/apps/creative.js', './js/apps/tools.js', './js/apps/system.js', './js/apps/assistant.js', './js/ai/ai.js', './js/ai/worker.js',
   './js/main.js'
 ];
 
@@ -22,6 +22,8 @@ self.addEventListener('activate', (e) => {
 // Cache zuerst – das Internet wird nie benötigt
 self.addEventListener('fetch', (e) => {
   if (e.request.method !== 'GET') return;
+  // KI-Modelle verwaltet Nova KI selbst (eigener Speicher) – nicht doppelt cachen
+  if (/\/models\//.test(new URL(e.request.url).pathname)) return;
   e.respondWith(
     caches.match(e.request, { ignoreSearch: true }).then((hit) => hit || fetch(e.request).then((res) => {
       if (res.ok && new URL(e.request.url).origin === location.origin) {

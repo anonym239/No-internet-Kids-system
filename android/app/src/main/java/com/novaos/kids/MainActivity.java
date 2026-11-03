@@ -21,6 +21,8 @@ public class MainActivity extends BridgeActivity {
         registerPlugin(NovaKioskPlugin.class);
         registerPlugin(NovaGuardPlugin.class);
         super.onCreate(savedInstanceState);
+        // Internet-Sperre: nur eigene Dateien, außer bei erlaubten KI-Downloads
+        getBridge().setWebViewClient(new NovaWebViewClient(getBridge()));
 
         // Vollbild bis an die Ränder, auch neben dem Kamera-Loch
         WindowCompat.setDecorFitsSystemWindows(getWindow(), false);

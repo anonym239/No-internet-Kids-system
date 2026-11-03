@@ -1,0 +1,6 @@
+<!doctype html><meta charset="utf-8"><title>Umzug</title>
+<script>
+  const data = {};
+  try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith('nova.')) data[k] = localStorage.getItem(k); } } catch (e) {}
+  window.novaMigrate.send(data);
+</script>

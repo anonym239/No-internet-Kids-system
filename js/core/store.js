@@ -14,7 +14,7 @@
   const LS = window.localStorage;
   const IDX = 'nova.accounts';
   const SESSION = 'nova.session';
-  const COLS = ['todos', 'notes', 'drawings', 'pixels', 'beats', 'decks', 'calc'];
+  const COLS = ['todos', 'notes', 'drawings', 'pixels', 'beats', 'decks', 'calc', 'aichats'];
   const TOKEN_PREFIX = 'NOVA1';
 
   const COLORS = [
@@ -48,11 +48,11 @@
       created: now,
       updated: now,
       lastBackup: 0,
-      settings: { theme: 'dark', accent: 'auto', wallpaper: 'mono', icons: 'tint', bw: false, fx: false, v3: true, v4: true, sound: true, kiosk: false, simple: null, u: now },
+      settings: { theme: 'dark', accent: 'auto', wallpaper: 'mono', icons: 'tint', bw: false, fx: false, v3: true, v4: true, v5: true, sound: true, kiosk: false, simple: null, u: now },
       folders: [],
-      dock: ['mathe', 'deutsch', 'todo', 'notes', 'calc', 'runner'],
+      dock: ['assistant', 'mathe', 'deutsch', 'todo', 'notes', 'runner'],
       recent: [],
-      data: { todos: [], notes: [], drawings: [], pixels: [], beats: [], decks: [], calc: [], scores: {} },
+      data: { todos: [], notes: [], drawings: [], pixels: [], beats: [], decks: [], calc: [], aichats: [], scores: {} },
       st: { limit: 0, bedtime: { on: false, from: '21:00', to: '07:00' }, usage: {}, bonus: {}, locked: {}, unlocked: {}, parentKey: null, usedCodes: [], u: now }
     };
   }
@@ -72,6 +72,7 @@
     if (!a.internet) a.internet = 'offline';
     if (!a.settings.v3) Object.assign(a.settings, { accent: 'auto', wallpaper: 'mono', icons: 'tint', bw: false, v3: true });
     if (!a.settings.v4) { if (a.settings.icons === 'mono') a.settings.icons = 'tint'; a.settings.v4 = true; }
+    if (!a.settings.v5) { if (!a.dock.includes('assistant')) a.dock.unshift('assistant'); a.settings.v5 = true; }
     return a;
   }
 

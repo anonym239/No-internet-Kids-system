@@ -12,7 +12,8 @@ const outDir = path.join(root, 'models');
 const src = JSON.parse(fs.readFileSync(path.join(__dirname, 'ai-catalog.json'), 'utf8'));
 const HF = 'https://huggingface.co';
 const SUFFIX = { fp32: '', fp16: '_fp16', q8: '_quantized', int8: '_int8', uint8: '_uint8', q4: '_q4', q4f16: '_q4f16', bnb4: '_bnb4' };
-const WASM_PREF = ['q4', 'q8', 'int8', 'uint8', 'q4f16', 'fp16', 'fp32'];
+// Prozessor (WebAssembly): 8-Bit-Varianten laufen überall. q4 nutzt teils GatherBlockQuantized, das WASM nicht kann.
+const WASM_PREF = ['q8', 'int8', 'uint8', 'q4', 'fp16', 'fp32'];
 const GPU_PREF = ['q4f16', 'q4', 'fp16', 'q8', 'fp32'];
 const MAX_BUNDLE = 1.6 * 1024 ** 3;
 
@@ -82,7 +83,7 @@ async function download(id, file) {
       const meta = files.filter((f) => isMeta(f.path));
       const comps = components(files);
       if (!Object.keys(comps).length) throw new Error('keine ONNX-Dateien gefunden');
-      const wasm = choose(comps, WASM_PREF, ['q4', 'q8', 'int8', 'uint8']);
+      const wasm = choose(comps, WASM_PREF, ['q8', 'int8', 'uint8']);
       const gpu = choose(comps, GPU_PREF);
       if (!wasm) throw new Error('keine passende ONNX-Variante');
       const metaSize = meta.reduce((s, f) => s + f.size, 0);
